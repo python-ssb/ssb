@@ -1,7 +1,0 @@
--r production.txt
-asynctest
-coverage
-pytest
-pytest-asyncio
-pytest-cov
-pytest-mock

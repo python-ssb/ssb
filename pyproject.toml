@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "ssb"
+version = "0.1.0"
+description = "Secure Scuttlebutt library in Python"
+authors = ["PyScuttleButt Contributors <pedro@dete.st>"]
+license = "MIT"
+readme = "README.rst"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+async_generator = "^1.8"
+PyNaCl = "^1.1.0"
+PyYAML = { version = "^4.2b3", allow-prereleases = true }
+secret-handshake = { version = "0.1.0.dev3", allow-prereleases = true }
+simplejson = "3.16.0"
+colorlog = "^6.7.0"
+
+[tool.poetry.group.dev.dependencies]
+check-manifest = "^0.39"
+coverage = "^4.5.3"
+isort = "^4.3.20"
+pep257 = "^0.7.0"
+pytest-cov = "^2.7.1"
+pytest = "^4.6.3"
+pytest-asyncio = "0.10.0"
+asynctest = "0.13.0"
+pytest-mock = "1.10.4"
+
+[tool.poetry.group.docs.dependencies]
+Sphinx = "^2.1.1"
+
+[tool.pytest.ini_options]
+addopts = ["--cov", "ssb", "--cov-report", "term-missing", "--no-cov-on-fail"]
+python_files = ["ssb/tests/test_*.py"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
