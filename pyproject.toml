@@ -39,7 +39,7 @@ omit = ["examples/*"]
 
 [tool.pytest.ini_options]
 addopts = ["--cov=.", "--no-cov-on-fail"]
-python_files = ["ssb/tests/test_*.py"]
+python_files = ["tests/test_*.py"]
 
 [build-system]
 requires = ["poetry-core"]
