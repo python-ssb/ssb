@@ -14,7 +14,7 @@ include = ["ssb/py.typed"]
 python = "^3.9"
 PyNaCl = "^1.1.0"
 PyYAML = "^6.0.1"
-secret-handshake = { version = "0.1.0.dev3", allow-prereleases = true }
+secret-handshake = { git = "https://gitea.polonkai.eu/gergely/PySecretHandshake", branch = "main" }
 simplejson = "3.16.0"
 colorlog = "^6.7.0"
 

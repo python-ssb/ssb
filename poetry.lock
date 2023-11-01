@@ -40,17 +40,6 @@ files = [
 typing-extensions = {version = ">=4.0.0", markers = "python_version < \"3.11\""}
 
 [[package]]
-name = "async-generator"
-version = "1.8"
-description = "Async generators for Python 3.5"
-optional = false
-python-versions = "*"
-files = [
-    {file = "async_generator-1.8-py3-none-any.whl", hash = "sha256:d9253336202cb9df50ba617893fe794c61394a7eb4b9054f285c860f395ac6ff"},
-    {file = "async_generator-1.8.zip", hash = "sha256:928b644cfc92be498f2d6c431e0082ae79ea736fbdf1ce4247881071dd525348"},
-]
-
-[[package]]
 name = "babel"
 version = "2.13.1"
 description = "Internationalization utilities"
@@ -841,47 +830,29 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pynacl"
-version = "1.1.2"
+version = "1.5.0"
 description = "Python binding to the Networking and Cryptography (NaCl) library"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 files = [
-    {file = "PyNaCl-1.1.2-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:9558ef5c1ae45322c054d1d1151016e0463b4da8b5c746a675e99c5c7d8f4faa"},
-    {file = "PyNaCl-1.1.2-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:301c966c1e17950e50d174ab4b2e7ef3e98ff51ad7a591152a19fe2139281eed"},
-    {file = "PyNaCl-1.1.2-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:4d21d733a63637ddf41d0cab50135ec9f5224dd22fd10ebf5c5f5f946b833f84"},
-    {file = "PyNaCl-1.1.2-cp27-cp27m-win32.whl", hash = "sha256:c93d151efcdd7d214b1b11d781c9f1b125f0208cd06d9762bddabdfeac1cedfc"},
-    {file = "PyNaCl-1.1.2-cp27-cp27m-win_amd64.whl", hash = "sha256:1b4938a557b32e5c6b27fac79a94cf1abb70753b5462a0b577bd2a77e09dacd0"},
-    {file = "PyNaCl-1.1.2-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:99f91eb80b85fe16f70d362cfeae8eeeb108cd09a85f039fdab02164762f764b"},
-    {file = "PyNaCl-1.1.2-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:57314a7bad4bd39501dc622942f9921923673e52e126b0fc4f0214b5d25d619a"},
-    {file = "PyNaCl-1.1.2-cp33-cp33m-macosx_10_6_intel.whl", hash = "sha256:506bc2591968a1a7b6577075bc29a591d8fff5bdfec03b0dd926f34b75b670e5"},
-    {file = "PyNaCl-1.1.2-cp33-cp33m-manylinux1_i686.whl", hash = "sha256:4c15d7cea1a313fff3f68222e682ee1f855e43c0865081cad7385066a6b57d75"},
-    {file = "PyNaCl-1.1.2-cp33-cp33m-manylinux1_x86_64.whl", hash = "sha256:c4ea0e3b9f3317ada56e12c7b37f6d0316900ae8b54a20d7b100d4e14350ac87"},
-    {file = "PyNaCl-1.1.2-cp33-cp33m-win32.whl", hash = "sha256:53d83faf274813a5778bba1cd4cb96b79f39e44a63b1c4a4dada01a2b0eeafe8"},
-    {file = "PyNaCl-1.1.2-cp33-cp33m-win_amd64.whl", hash = "sha256:5172395dea8203ae124fd282fef3d242aa75366d66aebc0f5aab0c4753eed97b"},
-    {file = "PyNaCl-1.1.2-cp34-cp34m-macosx_10_6_intel.whl", hash = "sha256:877879903cddb5da317fe86d923f65eb28c62fd7feb79cd3402d166e401f9423"},
-    {file = "PyNaCl-1.1.2-cp34-cp34m-manylinux1_i686.whl", hash = "sha256:123c41df1db119397f2e26e9c63ca2ea853d3663e26b1c389bd3859dc1b7178a"},
-    {file = "PyNaCl-1.1.2-cp34-cp34m-manylinux1_x86_64.whl", hash = "sha256:ceb16b7977123713ad898450ca86a2dc6706a17fe4cf278ffb6b76929c186550"},
-    {file = "PyNaCl-1.1.2-cp34-cp34m-win32.whl", hash = "sha256:813d4170f62d68236bb041cf731e8d1f34fc1006a5e5d81139bead6ddaa9d169"},
-    {file = "PyNaCl-1.1.2-cp34-cp34m-win_amd64.whl", hash = "sha256:f01405a5c453b866e35338c53882f7ba7069c1f4e4045ce67513ad45c796f8a5"},
-    {file = "PyNaCl-1.1.2-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:4a3be9f884df08087996516707446ba55648bbefae8428bf578fa05f20fa2ed9"},
-    {file = "PyNaCl-1.1.2-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:7d14f18f8bc43977691276097524b9713d21b9635fea9791311261a66e4fe296"},
-    {file = "PyNaCl-1.1.2-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:9532aaa446840ece574c719ad3bbf25f60ca9871f48b5446e3f73e8b498e2398"},
-    {file = "PyNaCl-1.1.2-cp35-cp35m-win32.whl", hash = "sha256:67b75a950dbc4025bfa549c183baa17db4096955912f385df31830e5a2121974"},
-    {file = "PyNaCl-1.1.2-cp35-cp35m-win_amd64.whl", hash = "sha256:dfc85c2b414dee700e32764559d560063825ec1470d3ee6c973e43c80a622e56"},
-    {file = "PyNaCl-1.1.2-cp36-cp36m-macosx_10_6_intel.whl", hash = "sha256:3fd984580cbea8e02fc531aa32ab9487b72c30127f9e4c8db9ba3fe8950ecc93"},
-    {file = "PyNaCl-1.1.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:75a427377b2088c29a44db08c796c75a9cde2f9725dd041903cfbc0f6034895c"},
-    {file = "PyNaCl-1.1.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:ca2deb968135f1400105ca902f5cef24ba6984b6a4904756498afcb9077c76f9"},
-    {file = "PyNaCl-1.1.2-cp36-cp36m-win32.whl", hash = "sha256:ffb74ac578b3b80b1d2d5a23a6dd7b1d6682e5fce6a7b3d21b46b180a5546055"},
-    {file = "PyNaCl-1.1.2-cp36-cp36m-win_amd64.whl", hash = "sha256:b796d95704b674100bd99fc42bbde9f8f2ccddae8599a4d4bbcb518428dfbfed"},
-    {file = "PyNaCl-1.1.2.tar.gz", hash = "sha256:32f52b754abf07c319c04ce16905109cab44b0e7f7c79497431d3b2000f8af8c"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-macosx_10_10_universal2.whl", hash = "sha256:401002a4aaa07c9414132aaed7f6836ff98f59277a234704ff66878c2ee4a0d1"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_24_aarch64.whl", hash = "sha256:52cb72a79269189d4e0dc537556f4740f7f0a9ec41c1322598799b0bdad4ef92"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a36d4a9dda1f19ce6e03c9a784a2921a4b726b02e1c736600ca9c22029474394"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:0c84947a22519e013607c9be43706dd42513f9e6ae5d39d3613ca1e142fba44d"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:06b8f6fa7f5de8d5d2f7573fe8c863c051225a27b61e6860fd047b1775807858"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:a422368fc821589c228f4c49438a368831cb5bbc0eab5ebe1d7fac9dded6567b"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:61f642bf2378713e2c2e1de73444a3778e5f0a38be6fee0fe532fe30060282ff"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-win32.whl", hash = "sha256:e46dae94e34b085175f8abb3b0aaa7da40767865ac82c928eeb9e57e1ea8a543"},
+    {file = "PyNaCl-1.5.0-cp36-abi3-win_amd64.whl", hash = "sha256:20f42270d27e1b6a29f54032090b972d97f0a1b0948cc52392041ef7831fee93"},
+    {file = "PyNaCl-1.5.0.tar.gz", hash = "sha256:8ac7448f09ab85811607bdd21ec2464495ac8b7c66d146bf545b0f08fb9220ba"},
 ]
 
 [package.dependencies]
 cffi = ">=1.4.1"
-six = "*"
 
 [package.extras]
-tests = ["pytest"]
+docs = ["sphinx (>=1.6.5)", "sphinx-rtd-theme"]
+tests = ["hypothesis (>=3.27.0)", "pytest (>=3.2.1,!=3.3.0)"]
 
 [[package]]
 name = "pytest"
@@ -1054,22 +1025,21 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "secret-handshake"
-version = "0.1.0.dev3"
-description = "A module that implements Secret Handshake as specified in \"Designing a Secret Handshake: Authenticated"
+version = "0.1.0"
+description = "A module that implements Secret Handshake"
 optional = false
-python-versions = "*"
-files = [
-    {file = "secret-handshake-0.1.0.dev3.tar.gz", hash = "sha256:be1f812101c0eb84a82a08d119090d8f423230878e233b4bfc551fb708b4e32a"},
-]
+python-versions = "^3.9"
+files = []
+develop = false
 
 [package.dependencies]
-async-generator = "1.8"
-pynacl = "1.1.2"
+PyNaCl = "^1.5.0"
 
-[package.extras]
-all = ["Sphinx (>=1.6.2)", "check-manifest (>=0.25)", "coverage (==4.4.1)", "isort (>=4.2.2)", "pydocstyle (==2.1.1)", "pytest (==3.4.0)", "pytest-asyncio (==0.6.0)", "pytest-cov (==2.5.1)", "pytest-mock (==1.6.3)"]
-docs = ["Sphinx (>=1.6.2)"]
-tests = ["check-manifest (>=0.25)", "coverage (==4.4.1)", "isort (>=4.2.2)", "pydocstyle (==2.1.1)", "pytest (==3.4.0)", "pytest-asyncio (==0.6.0)", "pytest-cov (==2.5.1)", "pytest-mock (==1.6.3)"]
+[package.source]
+type = "git"
+url = "https://gitea.polonkai.eu/gergely/PySecretHandshake"
+reference = "main"
+resolved_reference = "83add95c8acb68163a9e674e7319c9f79f7b291f"
 
 [[package]]
 name = "setuptools"
@@ -1106,17 +1076,6 @@ files = [
     {file = "simplejson-3.16.0-cp35-cp35m-win_amd64.whl", hash = "sha256:067a7177ddfa32e1483ba5169ebea1bc2ea27f224853211ca669325648ca5642"},
     {file = "simplejson-3.16.0-cp36-cp36m-win_amd64.whl", hash = "sha256:75e3f0b12c28945c08f54350d91e624f8dd580ab74fd4f1bbea54bc6b0165610"},
     {file = "simplejson-3.16.0.tar.gz", hash = "sha256:b1f329139ba647a9548aa05fb95d046b4a677643070dc2afc05fa2e975d09ca5"},
-]
-
-[[package]]
-name = "six"
-version = "1.16.0"
-description = "Python 2 and 3 compatibility utilities"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
-files = [
-    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
-    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 
 [[package]]
@@ -1379,4 +1338,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "98384046072d2dd4f649a93231ee6a84e5b21be34f15d5d2196cd3832f15ebca"
+content-hash = "d80cbfdf7923c50c95505a84d8ad75eae016ca81ae32a8b22d074569b0a0fcbd"
