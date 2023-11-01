@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from asyncio import ensure_future, gather, get_event_loop
+"""Test SSB server"""
+
+from asyncio import get_event_loop
 import logging
 
 from colorlog import ColoredFormatter
@@ -34,6 +36,8 @@ api = MuxRPCAPI()
 
 
 async def on_connect(conn):
+    """Incoming connection handler"""
+
     packet_stream = PacketStream(conn)
     api.add_connection(packet_stream)
 
@@ -43,6 +47,8 @@ async def on_connect(conn):
 
 
 async def main():
+    """The main function to run"""
+
     server = SHSServer("127.0.0.1", 8008, load_ssb_secret()["keypair"])
     server.on_connect(on_connect)
     await server.listen()
@@ -55,7 +61,7 @@ if __name__ == "__main__":
 
     # create formatter
     formatter = ColoredFormatter(
-        "%(log_color)s%(levelname)s%(reset)s:%(bold_white)s%(name)s%(reset)s - " "%(cyan)s%(message)s%(reset)s"
+        "%(log_color)s%(levelname)s%(reset)s:%(bold_white)s%(name)s%(reset)s - %(cyan)s%(message)s%(reset)s"
     )
 
     # add formatter to ch

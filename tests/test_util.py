@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Tests for the utility functions"""
+
 from base64 import b64decode
 from unittest.mock import mock_open, patch
 
@@ -41,6 +43,8 @@ CONFIG_FILE_INVALID = CONFIG_FILE.replace("ed25519", "foo")
 
 
 def test_load_secret():
+    """Test loading the SSB secret from a file"""
+
     with patch("ssb.util.open", mock_open(read_data=CONFIG_FILE), create=True):
         secret = load_ssb_secret()
 
@@ -52,6 +56,8 @@ def test_load_secret():
 
 
 def test_load_exception():
+    """Test configuration loading if there is a problem with the file"""
+
     with pytest.raises(ConfigException):
         with patch("ssb.util.open", mock_open(read_data=CONFIG_FILE_INVALID), create=True):
             load_ssb_secret()

@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Packet streams"""
+
 from asyncio import Event, Queue
 from enum import Enum
 import logging
@@ -28,28 +30,35 @@ import struct
 from time import time
 
 from async_generator import async_generator, yield_
-from secret_handshake import SHSClient, SHSServer
 import simplejson
 
 logger = logging.getLogger("packet_stream")
 
 
 class PSMessageType(Enum):
+    """Available message types"""
+
     BUFFER = 0
     TEXT = 1
     JSON = 2
 
 
-class PSStreamHandler(object):
+class PSStreamHandler:
+    """Packet stream handler"""
+
     def __init__(self, req):
         super(PSStreamHandler).__init__()
         self.req = req
         self.queue = Queue()
 
     async def process(self, msg):
+        """Process a pending message"""
+
         await self.queue.put(msg)
 
     async def stop(self):
+        """Stop a pending request"""
+
         await self.queue.put(None)
 
     @async_generator
@@ -61,30 +70,40 @@ class PSStreamHandler(object):
             await yield_(elem)
 
 
-class PSRequestHandler(object):
+class PSRequestHandler:
+    """Packet stream request handler"""
+
     def __init__(self, req):
-        super(PSRequestHandler).__init__()
         self.req = req
         self.event = Event()
         self._msg = None
 
     async def process(self, msg):
+        """Process a message request"""
+
         self._msg = msg
         self.event.set()
 
     async def stop(self):
+        """Stop a pending event request"""
+
         if not self.event.is_set():
             self.event.set()
 
     def __await__(self):
         # wait until 'process' is called
-        yield from self.event.wait().__await__()
+        yield from self.event.wait().__await__()  # pylint: disable=no-member
+
         return self._msg
 
 
-class PSMessage(object):
+class PSMessage:
+    """Packet Stream message"""
+
     @classmethod
     def from_header_body(cls, flags, req, body):
+        """Parse a raw message"""
+
         type_ = PSMessageType(flags & 0x03)
 
         if type_ == PSMessageType.TEXT:
@@ -96,13 +115,17 @@ class PSMessage(object):
 
     @property
     def data(self):
+        """The raw message data"""
+
         if self.type == PSMessageType.TEXT:
             return self.body.encode("utf-8")
-        elif self.type == PSMessageType.JSON:
+
+        if self.type == PSMessageType.JSON:
             return simplejson.dumps(self.body).encode("utf-8")
+
         return self.body
 
-    def __init__(self, type_, body, stream, end_err, req=None):
+    def __init__(self, type_, body, stream, end_err, req=None):  # pylint: disable=too-many-arguments
         self.stream = stream
         self.end_err = end_err
         self.type = type_
@@ -111,37 +134,45 @@ class PSMessage(object):
 
     def __repr__(self):
         if self.type == PSMessageType.BUFFER:
-            body = "{} bytes".format(len(self.body))
+            body = f"{len(self.body)} bytes"
         else:
             body = self.body
-        return "<PSMessage ({}): {}{} {}{}>".format(
-            self.type.name,
-            body,
-            "" if self.req is None else " [{}]".format(self.req),
-            "~" if self.stream else "",
-            "!" if self.end_err else "",
-        )
+
+        req = "" if self.req is None else f" [{self.req}]"
+        is_stream = "~" if self.stream else ""
+        err = "!" if self.end_err else ""
+
+        return f"<PSMessage ({self.type.name}): {body}{req} {is_stream}{err}>"
 
 
-class PacketStream(object):
+class PacketStream:
+    """SSB Packet stream"""
+
     def __init__(self, connection):
         self.connection = connection
         self.req_counter = 1
         self._event_map = {}
+        self._connected = False
 
     def register_handler(self, handler):
+        """Register an RPC handler"""
+
         self._event_map[handler.req] = (time(), handler)
 
     @property
     def is_connected(self):
+        """Check if the stream is connected"""
+
         return self.connection.is_connected
 
     @async_generator
     async def __aiter__(self):
         while True:
             msg = await self.read()
+
             if not msg:
                 return
+
             # filter out replies
             if msg.req >= 0:
                 await yield_(msg)
@@ -149,20 +180,24 @@ class PacketStream(object):
     async def __await__(self):
         async for data in self:
             logger.info("RECV: %r", data)
+
             if data is None:
                 return
 
     async def _read(self):
         try:
             header = await self.connection.read()
+
             if not header or header == b"\x00" * 9:
                 return
+
             flags, length, req = struct.unpack(">BIi", header)
 
             n_packets = ceil(length / 4096)
 
             body = b""
-            for n in range(n_packets):
+
+            for _ in range(n_packets):
                 body += await self.connection.read()
 
             logger.debug("READ %s %s", header, len(body))
@@ -173,12 +208,14 @@ class PacketStream(object):
             return None
 
     async def read(self):
+        """Read data from the packet stream"""
+
         msg = await self._read()
         if not msg:
             return None
         # check whether it's a reply and handle accordingly
         if msg.req < 0:
-            t, handler = self._event_map[-msg.req]
+            _, handler = self._event_map[-msg.req]
             await handler.process(msg)
             logger.info("RESPONSE [%d]: %r", -msg.req, msg)
             if msg.end_err:
@@ -200,7 +237,11 @@ class PacketStream(object):
         logger.debug("WRITE HDR: %s", header)
         logger.debug("WRITE DATA: %s", msg.data)
 
-    def send(self, data, msg_type=PSMessageType.JSON, stream=False, end_err=False, req=None):
+    def send(  # pylint: disable=too-many-arguments
+        self, data, msg_type=PSMessageType.JSON, stream=False, end_err=False, req=None
+    ):
+        """Send data through the packet stream"""
+
         update_counter = False
         if req is None:
             update_counter = True
@@ -222,5 +263,7 @@ class PacketStream(object):
         return handler
 
     def disconnect(self):
+        """Disconnect the stream"""
+
         self._connected = False
         self.connection.disconnect()

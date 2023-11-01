@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Tests for the feed functionality"""
+
 from base64 import b64decode
 from collections import OrderedDict
 
@@ -46,17 +48,23 @@ SERIALIZED_M1 = b"""{
 
 @pytest.fixture()
 def local_feed():
+    """Fixture providing a local feed"""
+
     secret = b64decode("Mz2qkNOP2K6upnqibWrR+z8pVUI1ReA1MLc7QMtF2qQ=")
     return LocalFeed(SigningKey(secret))
 
 
 @pytest.fixture()
 def remote_feed():
+    """Fixture providing a remote feed"""
+
     public = b64decode("I/4cyN/jPBbDsikbHzAEvmaYlaJK33lW3UhWjNXjyrU=")
     return Feed(VerifyKey(public))
 
 
 def test_local_feed():
+    """Test a local feed"""
+
     secret = b64decode("Mz2qkNOP2K6upnqibWrR+z8pVUI1ReA1MLc7QMtF2qQ=")
     feed = LocalFeed(SigningKey(secret))
     assert bytes(feed.private_key) == secret
@@ -65,6 +73,8 @@ def test_local_feed():
 
 
 def test_remote_feed():
+    """Test a remote feed"""
+
     public = b64decode("I/4cyN/jPBbDsikbHzAEvmaYlaJK33lW3UhWjNXjyrU=")
     feed = Feed(VerifyKey(public))
     assert bytes(feed.public_key) == public
@@ -88,7 +98,9 @@ def test_remote_feed():
         feed.sign(m1)
 
 
-def test_local_message(local_feed):
+def test_local_message(local_feed):  # pylint: disable=redefined-outer-name
+    """Test a local message"""
+
     m1 = LocalMessage(
         local_feed,
         OrderedDict(
@@ -133,7 +145,9 @@ def test_local_message(local_feed):
     assert m2.key == "%nx13uks5GUwuKJC49PfYGMS/1pgGTtwwdWT7kbVaroM=.sha256"
 
 
-def test_remote_message(remote_feed):
+def test_remote_message(remote_feed):  # pylint: disable=redefined-outer-name
+    """Test a remote message"""
+
     signature = "lPsQ9P10OgeyH6u0unFgiI2wV/RQ7Q2x2ebxnXYCzsJ055TBMXphRADTKhOMS2EkUxXQ9k3amj5fnWPudGxwBQ==.sig.ed25519"
     m1 = Message(
         remote_feed,
@@ -177,7 +191,9 @@ def test_remote_message(remote_feed):
     assert m2.key == "%nx13uks5GUwuKJC49PfYGMS/1pgGTtwwdWT7kbVaroM=.sha256"
 
 
-def test_remote_no_signature(remote_feed):
+def test_remote_no_signature(remote_feed):  # pylint: disable=redefined-outer-name
+    """Test remote feed without a signature"""
+
     with pytest.raises(ValueError):
         Message(
             remote_feed,
@@ -194,7 +210,9 @@ def test_remote_no_signature(remote_feed):
         )
 
 
-def test_serialize(local_feed):
+def test_serialize(local_feed):  # pylint: disable=redefined-outer-name
+    """Test feed serialization"""
+
     m1 = LocalMessage(
         local_feed,
         OrderedDict(
@@ -211,7 +229,9 @@ def test_serialize(local_feed):
     assert m1.serialize() == SERIALIZED_M1
 
 
-def test_parse(local_feed):
+def test_parse(local_feed):  # pylint: disable=redefined-outer-name
+    """Test feed parsing"""
+
     m1 = LocalMessage.parse(SERIALIZED_M1, local_feed)
     assert m1.content == {
         "type": "about",

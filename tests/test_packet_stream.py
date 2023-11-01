@@ -20,10 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Tests for the packet stream"""
+
 from asyncio import Event, ensure_future, gather
 import json
 
-from nacl.signing import SigningKey
 import pytest
 from secret_handshake.network import SHSDuplexStream
 
@@ -58,63 +59,94 @@ MSG_BODY_2 = (
 
 
 class MockSHSSocket(SHSDuplexStream):
-    def __init__(self, *args, **kwargs):
-        super(MockSHSSocket, self).__init__()
+    """A mocked SHS socket"""
+
+    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+        super().__init__()
+
         self.input = []
         self.output = []
         self.is_connected = False
         self._on_connect = []
 
     def on_connect(self, cb):
+        """Set the on_connect callback"""
+
         self._on_connect.append(cb)
 
     async def read(self):
+        """Read data from the socket"""
+
         if not self.input:
             raise StopAsyncIteration
         return self.input.pop(0)
 
     def write(self, data):
+        """Write data to the socket"""
+
         self.output.append(data)
 
-    def feed(self, input):
-        self.input += input
+    def feed(self, input_):
+        """Get the connection’s feed"""
+
+        self.input += input_
 
     def get_output(self):
+        """Get the output of a call"""
+
         while True:
             if not self.output:
                 break
             yield self.output.pop(0)
 
     def disconnect(self):
+        """Disconnect from the remote party"""
+
         self.is_connected = False
 
 
 class MockSHSClient(MockSHSSocket):
+    """A mocked SHS client"""
+
     async def connect(self):
+        """Connect to a SHS server"""
+
         self.is_connected = True
+
         for cb in self._on_connect:
             await cb()
 
 
 class MockSHSServer(MockSHSSocket):
+    """A mocked SHS server"""
+
     def listen(self):
+        """Listen for new connections"""
+
         self.is_connected = True
+
         for cb in self._on_connect:
             ensure_future(cb())
 
 
 @pytest.fixture
-def ps_client(event_loop):
+def ps_client(event_loop):  # pylint: disable=unused-argument
+    """Fixture to provide a mocked SHS client"""
+
     return MockSHSClient()
 
 
 @pytest.fixture
-def ps_server(event_loop):
+def ps_server(event_loop):  # pylint: disable=unused-argument
+    """Fixture to provide a mocked SHS server"""
+
     return MockSHSServer()
 
 
 @pytest.mark.asyncio
-async def test_on_connect(ps_server):
+async def test_on_connect(ps_server):  # pylint: disable=redefined-outer-name
+    """Test the on_connect callback functionality"""
+
     called = Event()
 
     async def _on_connect():
@@ -127,7 +159,9 @@ async def test_on_connect(ps_server):
 
 
 @pytest.mark.asyncio
-async def test_message_decoding(ps_client):
+async def test_message_decoding(ps_client):  # pylint: disable=redefined-outer-name
+    """Test message decoding"""
+
     await ps_client.connect()
 
     ps = PacketStream(ps_client)
@@ -160,7 +194,9 @@ async def test_message_decoding(ps_client):
 
 
 @pytest.mark.asyncio
-async def test_message_encoding(ps_client):
+async def test_message_encoding(ps_client):  # pylint: disable=redefined-outer-name
+    """Test message encoding"""
+
     await ps_client.connect()
 
     ps = PacketStream(ps_client)
@@ -201,7 +237,9 @@ async def test_message_encoding(ps_client):
 
 
 @pytest.mark.asyncio
-async def test_message_stream(ps_client, mocker):
+async def test_message_stream(ps_client, mocker):  # pylint: disable=redefined-outer-name
+    """Test requesting a history stream"""
+
     await ps_client.connect()
 
     ps = PacketStream(ps_client)
@@ -226,8 +264,8 @@ async def test_message_stream(ps_client, mocker):
     )
 
     assert ps.req_counter == 2
-    assert ps.register_handler.call_count == 1
-    handler = list(ps._event_map.values())[0][1]
+    assert ps.register_handler.call_count == 1  # pylint: disable=no-member
+    handler = list(ps._event_map.values())[0][1]  # pylint: disable=protected-access
     mock_process = mocker.AsyncMock()
 
     mocker.patch.object(handler, "process", mock_process)
@@ -259,8 +297,8 @@ async def test_message_stream(ps_client, mocker):
     )
 
     assert ps.req_counter == 3
-    assert ps.register_handler.call_count == 2
-    handler = list(ps._event_map.values())[1][1]
+    assert ps.register_handler.call_count == 2  # pylint: disable=no-member
+    handler = list(ps._event_map.values())[1][1]  # pylint: disable=protected-access
 
     mock_process = mocker.patch.object(handler, "process", wraps=handler.process)
     ps_client.feed(
@@ -286,7 +324,9 @@ async def test_message_stream(ps_client, mocker):
 
 
 @pytest.mark.asyncio
-async def test_message_request(ps_server, mocker):
+async def test_message_request(ps_server, mocker):  # pylint: disable=redefined-outer-name
+    """Test message sending"""
+
     ps_server.listen()
 
     ps = PacketStream(ps_server)
@@ -300,8 +340,8 @@ async def test_message_request(ps_server, mocker):
     assert json.loads(body.decode("utf-8")) == {"name": ["whoami"], "args": []}
 
     assert ps.req_counter == 2
-    assert ps.register_handler.call_count == 1
-    handler = list(ps._event_map.values())[0][1]
+    assert ps.register_handler.call_count == 1  # pylint: disable=no-member
+    handler = list(ps._event_map.values())[0][1]  # pylint: disable=protected-access
     mock_process = mocker.AsyncMock()
 
     mocker.patch.object(handler, "process", mock_process)

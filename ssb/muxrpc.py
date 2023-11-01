@@ -20,23 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""MuxRPC"""
+
 from async_generator import async_generator, yield_
 
 from ssb.packet_stream import PSMessageType
 
 
 class MuxRPCAPIException(Exception):
-    pass
+    """Exception to raise on MuxRPC API errors"""
 
 
-class MuxRPCHandler(object):
+class MuxRPCHandler:  # pylint: disable=too-few-public-methods
+    """Base MuxRPC handler class"""
+
     def check_message(self, msg):
+        """Check message validity"""
+
         body = msg.body
+
         if isinstance(body, dict) and "name" in body and body["name"] == "Error":
             raise MuxRPCAPIException(body["message"])
 
 
 class MuxRPCRequestHandler(MuxRPCHandler):
+    """MuxRPC handler for incoming RPC requests"""
+
     def __init__(self, ps_handler):
         self.ps_handler = ps_handler
 
@@ -47,52 +56,72 @@ class MuxRPCRequestHandler(MuxRPCHandler):
 
 
 class MuxRPCSourceHandler(MuxRPCHandler):
+    """MuxRPC handler for source-type RPC requests"""
+
     def __init__(self, ps_handler):
         self.ps_handler = ps_handler
 
     @async_generator
     async def __aiter__(self):
         async for msg in self.ps_handler:
-            try:
-                self.check_message(msg)
-                await yield_(msg)
-            except MuxRPCAPIException:
-                raise
+            self.check_message(msg)
+            await yield_(msg)
 
 
-class MuxRPCSinkHandlerMixin(object):
+class MuxRPCSinkHandlerMixin:  # pylint: disable=too-few-public-methods
+    """Mixin for sink-type MuxRPC handlers"""
+
     def send(self, msg, msg_type=PSMessageType.JSON, end=False):
+        """Send a message through the stream"""
+
         self.connection.send(msg, stream=True, msg_type=msg_type, req=self.req, end_err=end)
 
 
 class MuxRPCDuplexHandler(MuxRPCSinkHandlerMixin, MuxRPCSourceHandler):
+    """MuxRPC handler for duplex streams"""
+
     def __init__(self, ps_handler, connection, req):
-        super(MuxRPCDuplexHandler, self).__init__(ps_handler)
+        super().__init__(ps_handler)
+
         self.connection = connection
         self.req = req
 
 
 class MuxRPCSinkHandler(MuxRPCHandler, MuxRPCSinkHandlerMixin):
+    """MuxRPC handler for sinks"""
+
     def __init__(self, connection, req):
         self.connection = connection
         self.req = req
 
 
 def _get_appropriate_api_handler(type_, connection, ps_handler, req):
+    """Find the appropriate MuxRPC handler"""
+
     if type_ in {"sync", "async"}:
         return MuxRPCRequestHandler(ps_handler)
-    elif type_ == "source":
+
+    if type_ == "source":
         return MuxRPCSourceHandler(ps_handler)
-    elif type_ == "sink":
+
+    if type_ == "sink":
         return MuxRPCSinkHandler(connection, req)
-    elif type_ == "duplex":
+
+    if type_ == "duplex":
         return MuxRPCDuplexHandler(ps_handler, connection, req)
 
+    return None
 
-class MuxRPCRequest(object):
+
+class MuxRPCRequest:
+    """MuxRPC request"""
+
     @classmethod
     def from_message(cls, message):
+        """Initialise a request from a raw packet stream message"""
+
         body = message.body
+
         return cls(".".join(body["name"]), body["args"])
 
     def __init__(self, name, args):
@@ -100,22 +129,28 @@ class MuxRPCRequest(object):
         self.args = args
 
     def __repr__(self):
-        return "<MuxRPCRequest {0.name} {0.args}>".format(self)
+        return f"<MuxRPCRequest {self.name} {self.args}>"
 
 
-class MuxRPCMessage(object):
+class MuxRPCMessage:
+    """MuxRPC message"""
+
     @classmethod
     def from_message(cls, message):
+        """Initialise a MuxRPC message from a raw packet stream message"""
+
         return cls(message.body)
 
     def __init__(self, body):
         self.body = body
 
     def __repr__(self):
-        return "<MuxRPCMessage {0.body}}>".format(self)
+        return f"<MuxRPCMessage {self.body}>"
 
 
-class MuxRPCAPI(object):
+class MuxRPCAPI:
+    """Generic MuxRPC API"""
+
     def __init__(self):
         self.handlers = {}
         self.connection = None
@@ -129,9 +164,13 @@ class MuxRPCAPI(object):
                 self.process(self.connection, MuxRPCRequest.from_message(req_message))
 
     def add_connection(self, connection):
+        """Set the packet stream connection of this RPC API"""
+
         self.connection = connection
 
     def define(self, name):
+        """Decorator to define an RPC method handler"""
+
         def _handle(f):
             self.handlers[name] = f
 
@@ -140,17 +179,25 @@ class MuxRPCAPI(object):
         return _handle
 
     def process(self, connection, request):
+        """Process an incoming request"""
+
         handler = self.handlers.get(request.name)
+
         if not handler:
-            raise MuxRPCAPIException("Method {} not found!".format(request.name))
+            raise MuxRPCAPIException(f"Method {request.name} not found!")
+
         handler(connection, request)
 
     def call(self, name, args, type_="sync"):
+        """Call an RPC method"""
+
         if not self.connection.is_connected:
-            raise Exception("not connected")
+            raise Exception("not connected")  # pylint: disable=broad-exception-raised
+
         old_counter = self.connection.req_counter
         ps_handler = self.connection.send(
             {"name": name.split("."), "args": args, "type": type_},
             stream=type_ in {"sink", "source", "duplex"},
         )
+
         return _get_appropriate_api_handler(type_, self.connection, ps_handler, old_counter)

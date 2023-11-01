@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Example SSB Client"""
+
 from asyncio import ensure_future, gather, get_event_loop
 import base64
 import hashlib
@@ -38,18 +40,24 @@ api = MuxRPCAPI()
 
 
 @api.define("createHistoryStream")
-def create_history_stream(connection, msg):
+def create_history_stream(connection, msg):  # pylint: disable=unused-argument
+    """Handle the createHistoryStream RPC call"""
+
     print("create_history_stream", msg)
     # msg = PSMessage(PSMessageType.JSON, True, stream=True, end_err=True, req=-req)
     # connection.write(msg)
 
 
 @api.define("blobs.createWants")
-def create_wants(connection, msg):
+def create_wants(connection, msg):  # pylint: disable=unused-argument
+    """Handle the createWants RPC call"""
+
     print("create_wants", msg)
 
 
 async def test_client():
+    """The actual client implementation"""
+
     async for msg in api.call(
         "createHistoryStream",
         [
@@ -90,7 +98,9 @@ async def test_client():
                 f.write(img_data)
 
 
-async def main():
+async def main(keypair):
+    """The main function to run"""
+
     client = SHSClient("127.0.0.1", 8008, keypair, bytes(keypair.verify_key))
     packet_stream = PacketStream(client)
     await client.open()
@@ -116,8 +126,8 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
     logger.addHandler(ch)
 
-    keypair = load_ssb_secret()["keypair"]
+    ssb_keypair = load_ssb_secret()["keypair"]
 
     loop = get_event_loop()
-    loop.run_until_complete(main())
+    loop.run_until_complete(main(ssb_keypair))
     loop.close()

@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Utility functions"""
+
 from base64 import b64decode, b64encode
 import os
 
@@ -28,17 +30,19 @@ import yaml
 
 
 class ConfigException(Exception):
-    pass
+    """Exception to raise if there is a problem with the configuration data"""
 
 
 def tag(key):
-    """Create tag from publick key."""
+    """Create tag from public key"""
+
     return b"@" + b64encode(bytes(key)) + b".ed25519"
 
 
 def load_ssb_secret():
     """Load SSB keys from ~/.ssb"""
-    with open(os.path.expanduser("~/.ssb/secret")) as f:
+
+    with open(os.path.expanduser("~/.ssb/secret"), encoding="utf-8") as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
 
     if config["curve"] != "ed25519":

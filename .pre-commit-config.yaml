@@ -24,6 +24,12 @@ repos:
         language: system
         require_serial: true
         types_or: [python, pyi]
+      - id: pylint
+        name: pylint
+        entry: poetry run pylint
+        language: system
+        types: [python]
+        require_serial: true
       - id: isort
         name: isort
         args: ["--check", "--diff"]

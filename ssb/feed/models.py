@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Feed models"""
+
 from base64 import b64encode
 from collections import OrderedDict, namedtuple
 import datetime
@@ -33,44 +35,65 @@ OrderedMsg = namedtuple("OrderedMsg", ("previous", "author", "sequence", "timest
 
 
 class NoPrivateKeyException(Exception):
-    pass
+    """Exception to raise when a private key is not available"""
 
 
 def to_ordered(data):
+    """Convert a dictionary to an ``OrderedDict``"""
+
     smsg = OrderedMsg(**data)
+
     return OrderedDict((k, getattr(smsg, k)) for k in smsg._fields)
 
 
 def get_millis_1970():
+    """Get the UNIX timestamp in milliseconds"""
+
     return int(datetime.datetime.utcnow().timestamp() * 1000)
 
 
-class Feed(object):
+class Feed:
+    """Base class for feeds"""
+
     def __init__(self, public_key):
         self.public_key = public_key
 
     @property
     def id(self):
+        """The identifier of the feed"""
+
         return tag(self.public_key).decode("ascii")
 
     def sign(self, msg):
+        """Sign a message"""
+
         raise NoPrivateKeyException("Cannot use remote identity to sign (no private key!)")
 
 
 class LocalFeed(Feed):
-    def __init__(self, private_key):
+    """Class representing a local feed"""
+
+    def __init__(self, private_key):  # pylint: disable=super-init-not-called
         self.private_key = private_key
 
     @property
     def public_key(self):
+        """The public key of the feed"""
+
         return self.private_key.verify_key
 
     def sign(self, msg):
+        """Sign a message for this feed"""
+
         return self.private_key.sign(msg).signature
 
 
-class Message(object):
-    def __init__(self, feed, content, signature, sequence=1, timestamp=None, previous=None):
+class Message:
+    """Base class for SSB messages"""
+
+    def __init__(  # pylint: disable=too-many-arguments
+        self, feed, content, signature=None, sequence=1, timestamp=None, previous=None
+    ):
         self.feed = feed
         self.content = content
 
@@ -88,14 +111,21 @@ class Message(object):
 
     @classmethod
     def parse(cls, data, feed):
+        """Parse raw message data"""
+
         obj = loads(data, object_pairs_hook=OrderedDict)
         msg = cls(feed, obj["content"], timestamp=obj["timestamp"])
+
         return msg
 
     def serialize(self, add_signature=True):
+        """Serialize the message"""
+
         return dumps(self.to_dict(add_signature=add_signature), indent=2).encode("utf-8")
 
     def to_dict(self, add_signature=True):
+        """Convert the message to a dictionary"""
+
         obj = to_ordered(
             {
                 "previous": self.previous.key if self.previous else None,
@@ -109,23 +139,34 @@ class Message(object):
 
         if add_signature:
             obj["signature"] = self.signature
+
         return obj
 
     def verify(self, signature):
+        """Verify the signature of the message"""
+
         return self.signature == signature
 
     @property
     def hash(self):
-        hash = sha256(self.serialize()).digest()
-        return b64encode(hash).decode("ascii") + ".sha256"
+        """The cryptographic hash of the message"""
+
+        hash_ = sha256(self.serialize()).digest()
+        return b64encode(hash_).decode("ascii") + ".sha256"
 
     @property
     def key(self):
+        """The key of the message"""
+
         return "%" + self.hash
 
 
 class LocalMessage(Message):
-    def __init__(self, feed, content, signature=None, sequence=1, timestamp=None, previous=None):
+    """Class representing a local message"""
+
+    def __init__(  # pylint: disable=too-many-arguments,super-init-not-called
+        self, feed, content, signature=None, sequence=1, timestamp=None, previous=None
+    ):
         self.feed = feed
         self.content = content
 

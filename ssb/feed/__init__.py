@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+"""Feed related functionality"""
+
 from .models import Feed, LocalFeed, LocalMessage, Message, NoPrivateKeyException
 
 __all__ = ("Feed", "LocalFeed", "Message", "LocalMessage", "NoPrivateKeyException")
