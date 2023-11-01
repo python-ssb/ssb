@@ -33,7 +33,7 @@ from async_generator import async_generator, yield_
 from secret_handshake import SHSClient, SHSServer
 
 
-logger = logging.getLogger('packet_stream')
+logger = logging.getLogger("packet_stream")
 
 
 class PSMessageType(Enum):
@@ -85,13 +85,12 @@ class PSRequestHandler(object):
 
 
 class PSMessage(object):
-
     @classmethod
     def from_header_body(cls, flags, req, body):
         type_ = PSMessageType(flags & 0x03)
 
         if type_ == PSMessageType.TEXT:
-            body = body.decode('utf-8')
+            body = body.decode("utf-8")
         elif type_ == PSMessageType.JSON:
             body = simplejson.loads(body)
 
@@ -100,9 +99,9 @@ class PSMessage(object):
     @property
     def data(self):
         if self.type == PSMessageType.TEXT:
-            return self.body.encode('utf-8')
+            return self.body.encode("utf-8")
         elif self.type == PSMessageType.JSON:
-            return simplejson.dumps(self.body).encode('utf-8')
+            return simplejson.dumps(self.body).encode("utf-8")
         return self.body
 
     def __init__(self, type_, body, stream, end_err, req=None):
@@ -114,12 +113,16 @@ class PSMessage(object):
 
     def __repr__(self):
         if self.type == PSMessageType.BUFFER:
-            body = '{} bytes'.format(len(self.body))
+            body = "{} bytes".format(len(self.body))
         else:
             body = self.body
-        return '<PSMessage ({}): {}{} {}{}>'.format(self.type.name, body,
-                                                    '' if self.req is None else ' [{}]'.format(self.req),
-                                                    '~' if self.stream else '', '!' if self.end_err else '')
+        return "<PSMessage ({}): {}{} {}{}>".format(
+            self.type.name,
+            body,
+            "" if self.req is None else " [{}]".format(self.req),
+            "~" if self.stream else "",
+            "!" if self.end_err else "",
+        )
 
 
 class PacketStream(object):
@@ -147,27 +150,27 @@ class PacketStream(object):
 
     async def __await__(self):
         async for data in self:
-            logger.info('RECV: %r', data)
+            logger.info("RECV: %r", data)
             if data is None:
                 return
 
     async def _read(self):
         try:
             header = await self.connection.read()
-            if not header or header == b'\x00' * 9:
+            if not header or header == b"\x00" * 9:
                 return
-            flags, length, req = struct.unpack('>BIi', header)
+            flags, length, req = struct.unpack(">BIi", header)
 
             n_packets = ceil(length / 4096)
 
-            body = b''
+            body = b""
             for n in range(n_packets):
                 body += await self.connection.read()
 
-            logger.debug('READ %s %s', header, len(body))
+            logger.debug("READ %s %s", header, len(body))
             return PSMessage.from_header_body(flags, req, body)
         except StopAsyncIteration:
-            logger.debug('DISCONNECT')
+            logger.debug("DISCONNECT")
             self.connection.disconnect()
             return None
 
@@ -179,21 +182,25 @@ class PacketStream(object):
         if msg.req < 0:
             t, handler = self._event_map[-msg.req]
             await handler.process(msg)
-            logger.info('RESPONSE [%d]: %r', -msg.req, msg)
+            logger.info("RESPONSE [%d]: %r", -msg.req, msg)
             if msg.end_err:
                 await handler.stop()
                 del self._event_map[-msg.req]
-                logger.info('RESPONSE [%d]: EOS', -msg.req)
+                logger.info("RESPONSE [%d]: EOS", -msg.req)
         return msg
 
     def _write(self, msg):
-        logger.info('SEND [%d]: %r', msg.req, msg)
-        header = struct.pack('>BIi', (int(msg.stream) << 3) | (int(msg.end_err) << 2) | msg.type.value, len(msg.data),
-                             msg.req)
+        logger.info("SEND [%d]: %r", msg.req, msg)
+        header = struct.pack(
+            ">BIi",
+            (int(msg.stream) << 3) | (int(msg.end_err) << 2) | msg.type.value,
+            len(msg.data),
+            msg.req,
+        )
         self.connection.write(header)
         self.connection.write(msg.data)
-        logger.debug('WRITE HDR: %s', header)
-        logger.debug('WRITE DATA: %s', msg.data)
+        logger.debug("WRITE HDR: %s", header)
+        logger.debug("WRITE DATA: %s", msg.data)
 
     def send(self, data, msg_type=PSMessageType.JSON, stream=False, end_err=False, req=None):
         update_counter = False

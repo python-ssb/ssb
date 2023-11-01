@@ -30,7 +30,7 @@ from simplejson import dumps, loads
 from ssb.util import tag
 
 
-OrderedMsg = namedtuple('OrderedMsg', ('previous', 'author', 'sequence', 'timestamp', 'hash', 'content'))
+OrderedMsg = namedtuple("OrderedMsg", ("previous", "author", "sequence", "timestamp", "hash", "content"))
 
 
 class NoPrivateKeyException(Exception):
@@ -52,10 +52,10 @@ class Feed(object):
 
     @property
     def id(self):
-        return tag(self.public_key).decode('ascii')
+        return tag(self.public_key).decode("ascii")
 
     def sign(self, msg):
-        raise NoPrivateKeyException('Cannot use remote identity to sign (no private key!)')
+        raise NoPrivateKeyException("Cannot use remote identity to sign (no private key!)")
 
 
 class LocalFeed(Feed):
@@ -90,24 +90,26 @@ class Message(object):
     @classmethod
     def parse(cls, data, feed):
         obj = loads(data, object_pairs_hook=OrderedDict)
-        msg = cls(feed, obj['content'], timestamp=obj['timestamp'])
+        msg = cls(feed, obj["content"], timestamp=obj["timestamp"])
         return msg
 
     def serialize(self, add_signature=True):
-        return dumps(self.to_dict(add_signature=add_signature), indent=2).encode('utf-8')
+        return dumps(self.to_dict(add_signature=add_signature), indent=2).encode("utf-8")
 
     def to_dict(self, add_signature=True):
-        obj = to_ordered({
-            'previous': self.previous.key if self.previous else None,
-            'author': self.feed.id,
-            'sequence': self.sequence,
-            'timestamp': self.timestamp,
-            'hash': 'sha256',
-            'content': self.content
-        })
+        obj = to_ordered(
+            {
+                "previous": self.previous.key if self.previous else None,
+                "author": self.feed.id,
+                "sequence": self.sequence,
+                "timestamp": self.timestamp,
+                "hash": "sha256",
+                "content": self.content,
+            }
+        )
 
         if add_signature:
-            obj['signature'] = self.signature
+            obj["signature"] = self.signature
         return obj
 
     def verify(self, signature):
@@ -116,11 +118,11 @@ class Message(object):
     @property
     def hash(self):
         hash = sha256(self.serialize()).digest()
-        return b64encode(hash).decode('ascii') + '.sha256'
+        return b64encode(hash).decode("ascii") + ".sha256"
 
     @property
     def key(self):
-        return '%' + self.hash
+        return "%" + self.hash
 
 
 class LocalMessage(Message):
@@ -144,4 +146,4 @@ class LocalMessage(Message):
     def _sign(self):
         # ensure ordering of keys and indentation of 2 characters, like ssb-keys
         data = self.serialize(add_signature=False)
-        return (b64encode(bytes(self.feed.sign(data))) + b'.sig.ed25519').decode('ascii')
+        return (b64encode(bytes(self.feed.sign(data))) + b".sig.ed25519").decode("ascii")

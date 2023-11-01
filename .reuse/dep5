@@ -3,6 +3,6 @@ Upstream-Name: PySSB
 Upstream-Contact: Pedro Ferreira <pedro@dete.st>
 Source: https://github.com/pferreir/pyssb
 
-Files: AUTHORS README.rst poetry.lock .gitignore .pre-commit-config.yaml setup.cfg
+Files: AUTHORS README.rst poetry.lock .gitignore .pre-commit-config.yaml
 Copyright: 2023 Gergely Polonkai <python-ssb@gergely.polonkai.eu>
 License: CC0-1.0

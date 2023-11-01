@@ -16,6 +16,14 @@ repos:
         pass_filenames: false
         language: system
         stages: [push]
+      - id: black
+        name: black
+        description: "Black: The uncompromising Python code formatter"
+        entry: poetry run black
+        args: ["--diff"]
+        language: system
+        require_serial: true
+        types_or: [python, pyi]
       - id: reuse
         name: reuse
         entry: poetry run reuse
