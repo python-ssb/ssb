@@ -17,20 +17,28 @@ colorlog = "^6.7.0"
 
 [tool.poetry.group.dev.dependencies]
 check-manifest = "^0.39"
-coverage = "^4.5.3"
+coverage = "^7.3.2"
 isort = "^4.3.20"
 pep257 = "^0.7.0"
-pytest-cov = "^2.7.1"
-pytest = "^4.6.3"
-pytest-asyncio = "0.10.0"
-asynctest = "0.13.0"
-pytest-mock = "1.10.4"
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^2.1.1"
 
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 70
+omit = ["examples/*"]
+
 [tool.pytest.ini_options]
-addopts = ["--cov", "ssb", "--cov-report", "term-missing", "--no-cov-on-fail"]
+addopts = ["--cov=.", "--no-cov-on-fail"]
 python_files = ["ssb/tests/test_*.py"]
 
 [build-system]

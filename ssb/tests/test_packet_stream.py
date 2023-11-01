@@ -2,7 +2,6 @@ import json
 from asyncio import ensure_future, gather, Event
 
 import pytest
-from asynctest import patch
 from nacl.signing import SigningKey
 
 from secret_handshake.network import SHSDuplexStream
@@ -185,17 +184,19 @@ async def test_message_stream(ps_client, mocker):
     assert ps.req_counter == 2
     assert ps.register_handler.call_count == 1
     handler = list(ps._event_map.values())[0][1]
+    mock_process = mocker.AsyncMock()
 
-    with patch.object(handler, 'process') as mock_process:
-        ps_client.feed([b'\n\x00\x00\x02\xc5\xff\xff\xff\xff', MSG_BODY_1])
-        msg = await ps.read()
-        assert mock_process.call_count == 1
+    mocker.patch.object(handler, 'process', mock_process)
 
-        # responses have negative req
-        assert msg.req == -1
-        assert msg.body['previous'] == '%KTGP6W8vF80McRAZHYDWuKOD0KlNyKSq6Gb42iuV7Iw=.sha256'
+    ps_client.feed([b'\n\x00\x00\x02\xc5\xff\xff\xff\xff', MSG_BODY_1])
+    msg = await ps.read()
+    assert mock_process.await_count == 1
 
-        assert ps.req_counter == 2
+    # responses have negative req
+    assert msg.req == -1
+    assert msg.body['previous'] == '%KTGP6W8vF80McRAZHYDWuKOD0KlNyKSq6Gb42iuV7Iw=.sha256'
+
+    assert ps.req_counter == 2
 
     stream_handler = ps.send({
         'name': ['createHistoryStream'],
@@ -212,21 +213,21 @@ async def test_message_stream(ps_client, mocker):
     assert ps.register_handler.call_count == 2
     handler = list(ps._event_map.values())[1][1]
 
-    with patch.object(handler, 'process', wraps=handler.process) as mock_process:
-        ps_client.feed([b'\n\x00\x00\x02\xc5\xff\xff\xff\xfe', MSG_BODY_1,
-                        b'\x0e\x00\x00\x023\xff\xff\xff\xfe', MSG_BODY_2])
+    mock_process = mocker.patch.object(handler, 'process', wraps=handler.process)
+    ps_client.feed([b'\n\x00\x00\x02\xc5\xff\xff\xff\xfe', MSG_BODY_1,
+                    b'\x0e\x00\x00\x023\xff\xff\xff\xfe', MSG_BODY_2])
 
-        # execute both message polling and response handling loops
-        collected, handled = await gather(_collect_messages(ps), _collect_messages(stream_handler))
+    # execute both message polling and response handling loops
+    collected, handled = await gather(_collect_messages(ps), _collect_messages(stream_handler))
 
-        # No messages collected, since they're all responses
-        assert collected == []
+    # No messages collected, since they're all responses
+    assert collected == []
 
-        assert mock_process.call_count == 2
+    assert mock_process.call_count == 2
 
-        for msg in handled:
-            # responses have negative req
-            assert msg.req == -2
+    for msg in handled:
+        # responses have negative req
+        assert msg.req == -2
 
 
 @pytest.mark.asyncio
@@ -249,14 +250,15 @@ async def test_message_request(ps_server, mocker):
     assert ps.req_counter == 2
     assert ps.register_handler.call_count == 1
     handler = list(ps._event_map.values())[0][1]
+    mock_process = mocker.AsyncMock()
 
-    with patch.object(handler, 'process') as mock_process:
-        ps_server.feed([b'\x02\x00\x00\x00>\xff\xff\xff\xff',
-                        b'{"id":"@1+Iwm79DKvVBqYKFkhT6fWRbAVvNNVH4F2BSxwhYmx8=.ed25519"}'])
-        msg = await ps.read()
-        assert mock_process.call_count == 1
+    mocker.patch.object(handler, 'process', mock_process)
+    ps_server.feed([b'\x02\x00\x00\x00>\xff\xff\xff\xff',
+                    b'{"id":"@1+Iwm79DKvVBqYKFkhT6fWRbAVvNNVH4F2BSxwhYmx8=.ed25519"}'])
+    msg = await ps.read()
+    assert mock_process.await_count == 1
 
-        # responses have negative req
-        assert msg.req == -1
-        assert msg.body['id'] == '@1+Iwm79DKvVBqYKFkhT6fWRbAVvNNVH4F2BSxwhYmx8=.ed25519'
-        assert ps.req_counter == 2
+    # responses have negative req
+    assert msg.req == -1
+    assert msg.body['id'] == '@1+Iwm79DKvVBqYKFkhT6fWRbAVvNNVH4F2BSxwhYmx8=.ed25519'
+    assert ps.req_counter == 2
