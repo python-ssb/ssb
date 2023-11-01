@@ -37,6 +37,13 @@ repos:
         language: system
         require_serial: true
         types_or: [python, pyi]
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy
+        args: ["--strict"]
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
       - id: reuse
         name: reuse
         entry: poetry run reuse

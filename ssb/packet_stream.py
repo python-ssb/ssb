@@ -28,9 +28,13 @@ import logging
 from math import ceil
 import struct
 from time import time
+from typing import Any, AsyncIterator, Dict, Optional, Tuple, Union
 
+from secret_handshake.network import SHSDuplexStream
 import simplejson
+from typing_extensions import Self
 
+PSMessageData = Union[bytes, bool, Dict[str, Any], str]
 logger = logging.getLogger("packet_stream")
 
 
@@ -45,25 +49,27 @@ class PSMessageType(Enum):
 class PSStreamHandler:
     """Packet stream handler"""
 
-    def __init__(self, req):
-        super(PSStreamHandler).__init__()
+    def __init__(self, req: int):
+        super().__init__()
         self.req = req
-        self.queue = Queue()
+        self.queue: Queue["PSMessage"] = Queue()
 
-    async def process(self, msg):
+    async def process(self, msg: "PSMessage") -> None:
         """Process a pending message"""
 
         await self.queue.put(msg)
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop a pending request"""
 
-        await self.queue.put(None)
+        # We use the None value internally to signal __anext__ that the stream can be closed.  It is not used otherwise,
+        # hence the typing ignore
+        await self.queue.put(None)  # type: ignore[arg-type]
 
-    def __aiter__(self):
+    def __aiter__(self) -> AsyncIterator[Optional["PSMessage"]]:
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> Optional["PSMessage"]:
         elem = await self.queue.get()
 
         if not elem:
@@ -75,29 +81,31 @@ class PSStreamHandler:
 class PSRequestHandler:
     """Packet stream request handler"""
 
-    def __init__(self, req):
+    def __init__(self, req: int):
         self.req = req
         self.event = Event()
-        self._msg = None
+        self._msg: Optional["PSMessage"] = None
 
-    async def process(self, msg):
+    async def process(self, msg: "PSMessage") -> None:
         """Process a message request"""
 
         self._msg = msg
         self.event.set()
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop a pending event request"""
 
         if not self.event.is_set():
             self.event.set()
 
-    def __aiter__(self):
+    def __aiter__(self) -> AsyncIterator["PSMessage"]:
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> "PSMessage":
         # wait until 'process' is called
         await self.event.wait()
+
+        assert self._msg
 
         return self._msg
 
@@ -106,42 +114,55 @@ class PSMessage:
     """Packet Stream message"""
 
     @classmethod
-    def from_header_body(cls, flags, req, body):
+    def from_header_body(cls, flags: int, req: int, body: bytes) -> Self:
         """Parse a raw message"""
 
         type_ = PSMessageType(flags & 0x03)
 
         if type_ == PSMessageType.TEXT:
-            body = body.decode("utf-8")
+            decoded_body: Union[str, Dict[str, Any], bytes] = body.decode("utf-8")
         elif type_ == PSMessageType.JSON:
-            body = simplejson.loads(body)
+            decoded_body = simplejson.loads(body)
+        else:
+            decoded_body = body
 
-        return cls(type_, body, bool(flags & 0x08), bool(flags & 0x04), req=req)
+        return cls(type_, decoded_body, bool(flags & 0x08), bool(flags & 0x04), req=req)
 
     @property
-    def data(self):
+    def data(self) -> bytes:
         """The raw message data"""
 
         if self.type == PSMessageType.TEXT:
+            assert isinstance(self.body, str)
             return self.body.encode("utf-8")
 
         if self.type == PSMessageType.JSON:
+            assert isinstance(self.body, dict)
             return simplejson.dumps(self.body).encode("utf-8")
+
+        assert isinstance(self.body, bytes)
 
         return self.body
 
-    def __init__(self, type_, body, stream, end_err, req=None):  # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        type_: PSMessageType,
+        body: Union[bytes, str, Dict[str, Any]],
+        stream: bool,
+        end_err: bool,
+        req: Optional[int] = None,
+    ):  # pylint: disable=too-many-arguments
         self.stream = stream
         self.end_err = end_err
         self.type = type_
         self.body = body
         self.req = req
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.type == PSMessageType.BUFFER:
             body = f"{len(self.body)} bytes"
         else:
-            body = self.body
+            body = str(self.body)
 
         req = "" if self.req is None else f" [{self.req}]"
         is_stream = "~" if self.stream else ""
@@ -153,79 +174,90 @@ class PSMessage:
 class PacketStream:
     """SSB Packet stream"""
 
-    def __init__(self, connection):
+    def __init__(self, connection: SHSDuplexStream):
         self.connection = connection
         self.req_counter = 1
-        self._event_map = {}
+        self._event_map: Dict[int, Tuple[float, Union[PSRequestHandler, PSStreamHandler]]] = {}
         self._connected = False
 
-    def register_handler(self, handler):
+    def register_handler(self, handler: Union[PSRequestHandler, PSStreamHandler]) -> None:
         """Register an RPC handler"""
 
         self._event_map[handler.req] = (time(), handler)
 
     @property
-    def is_connected(self):
+    def is_connected(self) -> bool:
         """Check if the stream is connected"""
 
         return self.connection.is_connected
 
-    def __aiter__(self):
+    def __aiter__(self) -> AsyncIterator[Optional[PSMessage]]:
         return self
 
-    async def __anext__(self):
+    async def __anext__(self) -> PSMessage:
         while True:
             msg = await self.read()
 
             if not msg:
                 raise StopAsyncIteration()
 
-            if msg.req >= 0:
+            if msg.req is not None and msg.req >= 0:
                 logger.info("RECV: %r", msg)
 
                 return msg
 
-    async def _read(self):
+    async def _read(self) -> Optional[PSMessage]:
         try:
             header = await self.connection.read()
 
             if not header or header == b"\x00" * 9:
-                return
+                return None
 
             flags, length, req = struct.unpack(">BIi", header)
-
             n_packets = ceil(length / 4096)
-
             body = b""
 
             for _ in range(n_packets):
-                body += await self.connection.read()
+                read_data = await self.connection.read()
+
+                if not read_data:
+                    logger.debug("DISCONNECT")
+                    self.connection.disconnect()
+
+                    return None
+
+                body += read_data
 
             logger.debug("READ %s %s", header, len(body))
+
             return PSMessage.from_header_body(flags, req, body)
         except StopAsyncIteration:
             logger.debug("DISCONNECT")
             self.connection.disconnect()
             return None
 
-    async def read(self):
+    async def read(self) -> Optional[PSMessage]:
         """Read data from the packet stream"""
 
         msg = await self._read()
+
         if not msg:
             return None
+
         # check whether it's a reply and handle accordingly
-        if msg.req < 0:
+        if msg.req is not None and msg.req < 0:
             _, handler = self._event_map[-msg.req]
             await handler.process(msg)
             logger.info("RESPONSE [%d]: %r", -msg.req, msg)
+
             if msg.end_err:
                 await handler.stop()
                 del self._event_map[-msg.req]
                 logger.info("RESPONSE [%d]: EOS", -msg.req)
+
         return msg
 
-    def _write(self, msg):
+    def _write(self, msg: PSMessage) -> None:
         logger.info("SEND [%d]: %r", msg.req, msg)
         header = struct.pack(
             ">BIi",
@@ -239,11 +271,17 @@ class PacketStream:
         logger.debug("WRITE DATA: %s", msg.data)
 
     def send(  # pylint: disable=too-many-arguments
-        self, data, msg_type=PSMessageType.JSON, stream=False, end_err=False, req=None
-    ):
+        self,
+        data: Union[bytes, str, Dict[str, Any]],
+        msg_type: PSMessageType = PSMessageType.JSON,
+        stream: bool = False,
+        end_err: bool = False,
+        req: Optional[int] = None,
+    ) -> Union[PSRequestHandler, PSStreamHandler]:
         """Send data through the packet stream"""
 
         update_counter = False
+
         if req is None:
             update_counter = True
             req = self.req_counter
@@ -254,16 +292,18 @@ class PacketStream:
         self._write(msg)
 
         if stream:
-            handler = PSStreamHandler(self.req_counter)
+            handler: Union[PSRequestHandler, PSStreamHandler] = PSStreamHandler(self.req_counter)
         else:
             handler = PSRequestHandler(self.req_counter)
+
         self.register_handler(handler)
 
         if update_counter:
             self.req_counter += 1
+
         return handler
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         """Disconnect the stream"""
 
         self._connected = False

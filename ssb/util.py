@@ -24,23 +24,30 @@
 
 from base64 import b64decode, b64encode
 import os
-from typing import Optional
+from typing import Optional, TypedDict
 
-from nacl.signing import SigningKey
+from nacl.signing import SigningKey, VerifyKey
 import yaml
+
+
+class SSBSecret(TypedDict):
+    """Dictionary to hold an SSB identity"""
+
+    keypair: SigningKey
+    id: str
 
 
 class ConfigException(Exception):
     """Exception to raise if there is a problem with the configuration data"""
 
 
-def tag(key):
+def tag(key: VerifyKey) -> bytes:
     """Create tag from public key"""
 
     return b"@" + b64encode(bytes(key)) + b".ed25519"
 
 
-def load_ssb_secret(filename: Optional[str] = None):
+def load_ssb_secret(filename: Optional[str] = None) -> SSBSecret:
     """Load SSB keys from ``filename`` or, if unset, from ``~/.ssb/secret``"""
 
     filename = filename or os.path.expanduser("~/.ssb/secret")

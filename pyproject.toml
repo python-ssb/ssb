@@ -8,6 +8,7 @@ description = "Secure Scuttlebutt library in Python"
 authors = ["PyScuttleButt Contributors <pedro@dete.st>"]
 license = "MIT"
 readme = "README.rst"
+include = ["ssb/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -23,12 +24,15 @@ check-manifest = "^0.39"
 commitizen = "^3.12.0"
 coverage = "^7.3.2"
 isort = "^5.12.0"
+mypy = "^1.6.1"
 pep257 = "^0.7.0"
 pylint = "^3.0.2"
 pytest = "^7.4.3"
 pytest-asyncio = "^0.21.1"
 pytest-cov = "^4.1.0"
 pytest-mock = "^3.12.0"
+types-pyyaml = "^6.0.12.12"
+types-simplejson = "^3.19.0.2"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^2.1.1"

@@ -50,7 +50,7 @@ SERIALIZED_M1 = b"""{
 
 
 @pytest.fixture()
-def local_feed():
+def local_feed() -> LocalFeed:
     """Fixture providing a local feed"""
 
     secret = b64decode("Mz2qkNOP2K6upnqibWrR+z8pVUI1ReA1MLc7QMtF2qQ=")
@@ -58,14 +58,14 @@ def local_feed():
 
 
 @pytest.fixture()
-def remote_feed():
+def remote_feed() -> Feed:
     """Fixture providing a remote feed"""
 
     public = b64decode("I/4cyN/jPBbDsikbHzAEvmaYlaJK33lW3UhWjNXjyrU=")
     return Feed(VerifyKey(public))
 
 
-def test_local_feed():
+def test_local_feed() -> None:
     """Test a local feed"""
 
     secret = b64decode("Mz2qkNOP2K6upnqibWrR+z8pVUI1ReA1MLc7QMtF2qQ=")
@@ -75,7 +75,7 @@ def test_local_feed():
     assert feed.id == "@I/4cyN/jPBbDsikbHzAEvmaYlaJK33lW3UhWjNXjyrU=.ed25519"
 
 
-def test_remote_feed():
+def test_remote_feed() -> None:
     """Test a remote feed"""
 
     public = b64decode("I/4cyN/jPBbDsikbHzAEvmaYlaJK33lW3UhWjNXjyrU=")
@@ -85,35 +85,21 @@ def test_remote_feed():
 
     m1 = Message(
         feed,
-        OrderedDict(
-            [
-                ("type", "about"),
-                ("about", feed.id),
-                ("name", "neo"),
-                ("description", "The Chosen One"),
-            ]
-        ),
+        OrderedDict([("type", "about"), ("about", feed.id), ("name", "neo"), ("description", "The Chosen One")]),
         "foo",
         timestamp=1495706260190,
     )
 
     with pytest.raises(NoPrivateKeyException):
-        feed.sign(m1)
+        feed.sign(m1.serialize())
 
 
-def test_local_message(local_feed):  # pylint: disable=redefined-outer-name
+def test_local_message(local_feed: LocalFeed) -> None:  # pylint: disable=redefined-outer-name
     """Test a local message"""
 
     m1 = LocalMessage(
         local_feed,
-        OrderedDict(
-            [
-                ("type", "about"),
-                ("about", local_feed.id),
-                ("name", "neo"),
-                ("description", "The Chosen One"),
-            ]
-        ),
+        OrderedDict([("type", "about"), ("about", local_feed.id), ("name", "neo"), ("description", "The Chosen One")]),
         timestamp=1495706260190,
     )
     assert m1.timestamp == 1495706260190
@@ -148,20 +134,13 @@ def test_local_message(local_feed):  # pylint: disable=redefined-outer-name
     assert m2.key == "%nx13uks5GUwuKJC49PfYGMS/1pgGTtwwdWT7kbVaroM=.sha256"
 
 
-def test_remote_message(remote_feed):  # pylint: disable=redefined-outer-name
+def test_remote_message(remote_feed: Feed) -> None:  # pylint: disable=redefined-outer-name
     """Test a remote message"""
 
     signature = "lPsQ9P10OgeyH6u0unFgiI2wV/RQ7Q2x2ebxnXYCzsJ055TBMXphRADTKhOMS2EkUxXQ9k3amj5fnWPudGxwBQ==.sig.ed25519"
     m1 = Message(
         remote_feed,
-        OrderedDict(
-            [
-                ("type", "about"),
-                ("about", remote_feed.id),
-                ("name", "neo"),
-                ("description", "The Chosen One"),
-            ]
-        ),
+        OrderedDict([("type", "about"), ("about", remote_feed.id), ("name", "neo"), ("description", "The Chosen One")]),
         signature,
         timestamp=1495706260190,
     )
@@ -175,12 +154,7 @@ def test_remote_message(remote_feed):  # pylint: disable=redefined-outer-name
     m2 = Message(
         remote_feed,
         OrderedDict(
-            [
-                ("type", "about"),
-                ("about", remote_feed.id),
-                ("name", "morpheus"),
-                ("description", "Dude with big jaw"),
-            ]
+            [("type", "about"), ("about", remote_feed.id), ("name", "morpheus"), ("description", "Dude with big jaw")]
         ),
         signature,
         previous=m1,
@@ -194,54 +168,37 @@ def test_remote_message(remote_feed):  # pylint: disable=redefined-outer-name
     assert m2.key == "%nx13uks5GUwuKJC49PfYGMS/1pgGTtwwdWT7kbVaroM=.sha256"
 
 
-def test_remote_no_signature(remote_feed):  # pylint: disable=redefined-outer-name
+def test_remote_no_signature(remote_feed: Feed) -> None:  # pylint: disable=redefined-outer-name
     """Test remote feed without a signature"""
 
     with pytest.raises(ValueError):
         Message(
             remote_feed,
             OrderedDict(
-                [
-                    ("type", "about"),
-                    ("about", remote_feed.id),
-                    ("name", "neo"),
-                    ("description", "The Chosen One"),
-                ]
+                [("type", "about"), ("about", remote_feed.id), ("name", "neo"), ("description", "The Chosen One")]
             ),
             None,
             timestamp=1495706260190,
         )
 
 
-def test_serialize(local_feed):  # pylint: disable=redefined-outer-name
+def test_serialize(local_feed: LocalFeed) -> None:  # pylint: disable=redefined-outer-name
     """Test feed serialization"""
 
     m1 = LocalMessage(
         local_feed,
-        OrderedDict(
-            [
-                ("type", "about"),
-                ("about", local_feed.id),
-                ("name", "neo"),
-                ("description", "The Chosen One"),
-            ]
-        ),
+        OrderedDict([("type", "about"), ("about", local_feed.id), ("name", "neo"), ("description", "The Chosen One")]),
         timestamp=1495706260190,
     )
 
     assert m1.serialize() == SERIALIZED_M1
 
 
-def test_parse(local_feed):  # pylint: disable=redefined-outer-name
+def test_parse(local_feed: LocalFeed) -> None:  # pylint: disable=redefined-outer-name
     """Test feed parsing"""
 
     m1 = LocalMessage.parse(SERIALIZED_M1, local_feed)
-    assert m1.content == {
-        "type": "about",
-        "about": local_feed.id,
-        "name": "neo",
-        "description": "The Chosen One",
-    }
+    assert m1.content == {"type": "about", "about": local_feed.id, "name": "neo", "description": "The Chosen One"}
     assert m1.timestamp == 1495706260190
 
 
@@ -252,15 +209,15 @@ def test_local_unsigned(local_feed: LocalFeed, mocker: MockerFixture) -> None:  
     mocked_dt.utcnow = mocker.MagicMock(return_value=datetime(2023, 3, 7, 11, 45, 54, 0, tzinfo=timezone.utc))
     mocker.patch("ssb.feed.models.datetime", mocked_dt)
 
-    msg = LocalMessage(local_feed, b"test")
+    msg = LocalMessage(local_feed, OrderedDict({"test": True}))
 
     assert msg.feed == local_feed
-    assert msg.content == b"test"
+    assert msg.content == {"test": True}
     assert msg.sequence == 1
     assert msg.previous is None
     assert msg.timestamp == 1678189554000
     assert msg.signature == (
-        "SxZsBINzsuQqmB6JLmXyr22+FRY33bp3wj1MwjAOU3MqifGqfc3W/2T5D4qel5mqrgJt9IT8c3QayB1suj82AQ==.sig.ed25519"
+        "WjkA5rjzsYDHqeavEPcbNAbRMp5NRFDBNATMWgcsccso8sfwhaWnIEvQW79fA5YgKKybzlIsCMWHherToEI2DA==.sig.ed25519"
     )
 
 

@@ -42,7 +42,7 @@ CONFIG_FILE = """
 CONFIG_FILE_INVALID = CONFIG_FILE.replace("ed25519", "foo")
 
 
-def test_load_secret():
+def test_load_secret() -> None:
     """Test loading the SSB secret from a file"""
 
     with patch("ssb.util.open", mock_open(read_data=CONFIG_FILE), create=True):
@@ -55,7 +55,7 @@ def test_load_secret():
     assert bytes(secret["keypair"].verify_key) == b64decode("rsYpBIcXsxjQAf0JNes+MHqT2DL+EfopWKAp4rGeEPQ=")
 
 
-def test_load_exception():
+def test_load_exception() -> None:
     """Test configuration loading if there is a problem with the file"""
 
     with pytest.raises(ConfigException):

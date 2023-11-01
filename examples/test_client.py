@@ -30,9 +30,10 @@ import struct
 import time
 
 from colorlog import ColoredFormatter
+from nacl.signing import SigningKey
 from secret_handshake.network import SHSClient
 
-from ssb.muxrpc import MuxRPCAPI, MuxRPCAPIException
+from ssb.muxrpc import MuxRPCAPI, MuxRPCAPIException, MuxRPCRequest
 from ssb.packet_stream import PacketStream, PSMessageType
 from ssb.util import load_ssb_secret
 
@@ -40,7 +41,7 @@ api = MuxRPCAPI()
 
 
 @api.define("createHistoryStream")
-def create_history_stream(connection, msg):  # pylint: disable=unused-argument
+def create_history_stream(connection: PacketStream, msg: MuxRPCRequest) -> None:  # pylint: disable=unused-argument
     """Handle the createHistoryStream RPC call"""
 
     print("create_history_stream", msg)
@@ -49,13 +50,13 @@ def create_history_stream(connection, msg):  # pylint: disable=unused-argument
 
 
 @api.define("blobs.createWants")
-def create_wants(connection, msg):  # pylint: disable=unused-argument
+def create_wants(connection: PacketStream, msg: MuxRPCRequest) -> None:  # pylint: disable=unused-argument
     """Handle the createWants RPC call"""
 
     print("create_wants", msg)
 
 
-async def test_client():
+async def test_client() -> None:
     """The actual client implementation"""
 
     async for msg in api.call(
@@ -90,6 +91,8 @@ async def test_client():
 
     img_data = b""
     async for msg in api.call("blobs.get", ["&kqZ52sDcJSHOx7m4Ww80kK1KIZ65gpGnqwZlfaIVWWM=.sha256"], "source"):
+        assert msg
+
         if msg.type.name == "BUFFER":
             img_data += msg.data
         if msg.type.name == "JSON" and msg.data == b"true":
@@ -101,7 +104,7 @@ async def test_client():
                 f.write(img_data)
 
 
-async def main(keypair):
+async def main(keypair: SigningKey) -> None:
     """The main function to run"""
 
     client = SHSClient("127.0.0.1", 8008, keypair, bytes(keypair.verify_key))

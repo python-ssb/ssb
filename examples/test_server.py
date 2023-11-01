@@ -27,6 +27,7 @@ import logging
 
 from colorlog import ColoredFormatter
 from secret_handshake import SHSServer
+from secret_handshake.network import SHSDuplexStream
 
 from ssb.muxrpc import MuxRPCAPI
 from ssb.packet_stream import PacketStream
@@ -35,7 +36,7 @@ from ssb.util import load_ssb_secret
 api = MuxRPCAPI()
 
 
-async def on_connect(conn):
+async def on_connect(conn: SHSDuplexStream) -> None:
     """Incoming connection handler"""
 
     packet_stream = PacketStream(conn)
@@ -46,7 +47,7 @@ async def on_connect(conn):
         print(msg)
 
 
-async def main():
+async def main() -> None:
     """The main function to run"""
 
     server = SHSServer("127.0.0.1", 8008, load_ssb_secret()["keypair"])
