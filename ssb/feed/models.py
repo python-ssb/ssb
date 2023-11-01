@@ -86,7 +86,7 @@ class LocalFeed(Feed):
         return self.private_key.verify_key
 
     @public_key.setter
-    def public_key(self, key: VerifyKey) -> None:
+    def public_key(self, _: VerifyKey) -> None:
         raise TypeError("Can not set only the public key for a local feed")
 
     def sign(self, msg: bytes) -> bytes:
@@ -179,6 +179,9 @@ class Message:
 
 class LocalMessage(Message):
     """Class representing a local message"""
+
+    feed: LocalFeed
+    previous: "LocalMessage"
 
     def __init__(  # pylint: disable=too-many-arguments
         self,

@@ -31,7 +31,7 @@ import yaml
 
 
 class SSBSecret(TypedDict):
-    """Dictionary to hold an SSB identity"""
+    """Dictionary type to hold an SSB secret identity"""
 
     keypair: SigningKey
     id: str

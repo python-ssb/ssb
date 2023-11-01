@@ -98,7 +98,7 @@ class PSRequestHandler:
         if not self.event.is_set():
             self.event.set()
 
-    def __aiter__(self) -> AsyncIterator["PSMessage"]:
+    def __aiter__(self) -> AsyncIterator[Optional["PSMessage"]]:
         return self
 
     async def __anext__(self) -> "PSMessage":
