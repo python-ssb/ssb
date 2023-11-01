@@ -29,7 +29,6 @@ from math import ceil
 import struct
 from time import time
 
-from async_generator import async_generator, yield_
 import simplejson
 
 logger = logging.getLogger("packet_stream")
@@ -61,13 +60,16 @@ class PSStreamHandler:
 
         await self.queue.put(None)
 
-    @async_generator
-    async def __aiter__(self):
-        while True:
-            elem = await self.queue.get()
-            if not elem:
-                return
-            await yield_(elem)
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        elem = await self.queue.get()
+
+        if not elem:
+            raise StopAsyncIteration()
+
+        return elem
 
 
 class PSRequestHandler:
@@ -165,17 +167,18 @@ class PacketStream:
 
         return self.connection.is_connected
 
-    @async_generator
-    async def __aiter__(self):
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
         while True:
             msg = await self.read()
 
             if not msg:
-                return
+                raise StopAsyncIteration()
 
-            # filter out replies
             if msg.req >= 0:
-                await yield_(msg)
+                return msg
 
     async def __await__(self):
         async for data in self:

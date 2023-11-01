@@ -22,8 +22,6 @@
 
 """MuxRPC"""
 
-from async_generator import async_generator, yield_
-
 from ssb.packet_stream import PSMessageType
 
 
@@ -61,11 +59,14 @@ class MuxRPCSourceHandler(MuxRPCHandler):
     def __init__(self, ps_handler):
         self.ps_handler = ps_handler
 
-    @async_generator
-    async def __aiter__(self):
-        async for msg in self.ps_handler:
-            self.check_message(msg)
-            await yield_(msg)
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        msg = await self.ps_handler.__anext__()
+        self.check_message(msg)
+
+        return msg
 
 
 class MuxRPCSinkHandlerMixin:  # pylint: disable=too-few-public-methods
