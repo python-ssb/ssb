@@ -50,7 +50,6 @@ class PSStreamHandler:
     """Packet stream handler"""
 
     def __init__(self, req: int):
-        super().__init__()
         self.req = req
         self.queue: Queue["PSMessage"] = Queue()
 
