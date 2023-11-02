@@ -159,10 +159,10 @@ class MuxRPCAPI:
         """Continuously process incoming messages"""
 
         async for req_message in self.connection:
-            body = req_message.body
-
             if req_message is None:
                 return
+
+            body = req_message.body
 
             if isinstance(body, dict) and body.get("name"):
                 self.process(self.connection, MuxRPCRequest.from_message(req_message))
