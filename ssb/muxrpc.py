@@ -20,8 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from functools import wraps
-
 from async_generator import async_generator, yield_
 
 from ssb.packet_stream import PSMessageType
@@ -136,10 +134,6 @@ class MuxRPCAPI(object):
     def define(self, name):
         def _handle(f):
             self.handlers[name] = f
-
-            @wraps(f)
-            def _f(*args, **kwargs):
-                return f(*args, **kwargs)
 
             return f
 
