@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: PySSB
+Upstream-Contact: Pedro Ferreira <pedro@dete.st>
+Source: https://github.com/pferreir/pyssb
+
+Files: AUTHORS README.rst poetry.lock .gitignore .pre-commit-config.yaml setup.cfg
+Copyright: 2023 Gergely Polonkai <python-ssb@gergely.polonkai.eu>
+License: CC0-1.0

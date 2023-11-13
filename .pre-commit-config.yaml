@@ -16,3 +16,9 @@ repos:
         pass_filenames: false
         language: system
         stages: [push]
+      - id: reuse
+        name: reuse
+        entry: poetry run reuse
+        args: ["lint"]
+        language: system
+        pass_filenames: false
