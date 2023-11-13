@@ -228,7 +228,7 @@ class PacketStream:
 
                 if not read_data:
                     logger.debug("DISCONNECT")
-                    self.connection.disconnect()
+                    self.connection.close()
 
                     return None
 
@@ -239,7 +239,8 @@ class PacketStream:
             return PSMessage.from_header_body(flags, req, body)
         except StopAsyncIteration:
             logger.debug("DISCONNECT")
-            self.connection.disconnect()
+            self.connection.close()
+
             return None
 
     async def read(self) -> Optional[PSMessage]:
@@ -313,4 +314,4 @@ class PacketStream:
         """Disconnect the stream"""
 
         self._connected = False
-        self.connection.disconnect()
+        self.connection.close()
