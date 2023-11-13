@@ -105,7 +105,7 @@ async def main(keypair):
     packet_stream = PacketStream(client)
     await client.open()
     api.add_connection(packet_stream)
-    await gather(ensure_future(api), test_client())
+    await gather(ensure_future(api.process_messages()), test_client())
 
 
 if __name__ == "__main__":
