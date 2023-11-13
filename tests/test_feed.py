@@ -75,6 +75,17 @@ def test_local_feed() -> None:
     assert feed.id == "@I/4cyN/jPBbDsikbHzAEvmaYlaJK33lW3UhWjNXjyrU=.ed25519"
 
 
+def test_local_feed_set_pubkey(local_feed: LocalFeed) -> None:  # pylint: disable=redefined-outer-name
+    """Test setting only the public key for a local feed"""
+
+    key = SigningKey.generate().verify_key
+
+    with pytest.raises(TypeError) as ctx:
+        local_feed.public_key = key
+
+    assert str(ctx.value) == "Can not set only the public key for a local feed"
+
+
 def test_remote_feed() -> None:
     """Test a remote feed"""
 
@@ -210,6 +221,28 @@ def test_local_unsigned(local_feed: LocalFeed, mocker: MockerFixture) -> None:  
     mocker.patch("ssb.feed.models.datetime", mocked_dt)
 
     msg = LocalMessage(local_feed, OrderedDict({"test": True}))
+
+    assert msg.feed == local_feed
+    assert msg.content == {"test": True}
+    assert msg.sequence == 1
+    assert msg.previous is None
+    assert msg.timestamp == 1678189554000
+    assert msg.signature == (
+        "WjkA5rjzsYDHqeavEPcbNAbRMp5NRFDBNATMWgcsccso8sfwhaWnIEvQW79fA5YgKKybzlIsCMWHherToEI2DA==.sig.ed25519"
+    )
+
+
+def test_local_signed(local_feed: LocalFeed) -> None:  # pylint: disable=redefined-outer-name
+    """Test creating a signed message on a local feed"""
+
+    msg = LocalMessage(
+        local_feed,
+        OrderedDict({"test": True}),
+        timestamp=1678189554000,
+        signature=(
+            "WjkA5rjzsYDHqeavEPcbNAbRMp5NRFDBNATMWgcsccso8sfwhaWnIEvQW79fA5YgKKybzlIsCMWHherToEI2DA==.sig.ed25519"
+        ),
+    )
 
     assert msg.feed == local_feed
     assert msg.content == {"test": True}
