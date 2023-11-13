@@ -24,6 +24,7 @@
 
 from base64 import b64decode, b64encode
 import os
+from typing import Optional
 
 from nacl.signing import SigningKey
 import yaml
@@ -39,10 +40,12 @@ def tag(key):
     return b"@" + b64encode(bytes(key)) + b".ed25519"
 
 
-def load_ssb_secret():
-    """Load SSB keys from ~/.ssb"""
+def load_ssb_secret(filename: Optional[str] = None):
+    """Load SSB keys from ``filename`` or, if unset, from ``~/.ssb/secret``"""
 
-    with open(os.path.expanduser("~/.ssb/secret"), encoding="utf-8") as f:
+    filename = filename or os.path.expanduser("~/.ssb/secret")
+
+    with open(filename, encoding="utf-8") as f:
         config = yaml.load(f, Loader=yaml.SafeLoader)
 
     if config["curve"] != "ed25519":
