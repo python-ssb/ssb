@@ -24,6 +24,13 @@ repos:
         language: system
         require_serial: true
         types_or: [python, pyi]
+      - id: isort
+        name: isort
+        args: ["--check", "--diff"]
+        entry: poetry run isort
+        language: system
+        require_serial: true
+        types_or: [python, pyi]
       - id: reuse
         name: reuse
         entry: poetry run reuse

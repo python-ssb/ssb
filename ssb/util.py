@@ -20,11 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
-import yaml
 from base64 import b64decode, b64encode
+import os
 
 from nacl.signing import SigningKey
+import yaml
 
 
 class ConfigException(Exception):

@@ -20,18 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging
-import struct
 from asyncio import Event, Queue
 from enum import Enum
-from time import time
+import logging
 from math import ceil
+import struct
+from time import time
 
-import simplejson
 from async_generator import async_generator, yield_
-
 from secret_handshake import SHSClient, SHSServer
-
+import simplejson
 
 logger = logging.getLogger("packet_stream")
 

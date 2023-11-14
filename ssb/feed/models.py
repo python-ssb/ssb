@@ -20,15 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
 from base64 import b64encode
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict, namedtuple
+import datetime
 from hashlib import sha256
 
 from simplejson import dumps, loads
 
 from ssb.util import tag
-
 
 OrderedMsg = namedtuple("OrderedMsg", ("previous", "author", "sequence", "timestamp", "hash", "content"))
 

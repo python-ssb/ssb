@@ -20,14 +20,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from asyncio import ensure_future, gather, get_event_loop
 import logging
-from asyncio import gather, get_event_loop, ensure_future
 
 from colorlog import ColoredFormatter
-
 from secret_handshake import SHSServer
-from ssb.packet_stream import PacketStream
+
 from ssb.muxrpc import MuxRPCAPI
+from ssb.packet_stream import PacketStream
 from ssb.util import load_ssb_secret
 
 api = MuxRPCAPI()

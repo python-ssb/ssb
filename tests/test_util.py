@@ -25,8 +25,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from ssb.util import load_ssb_secret, ConfigException
-
+from ssb.util import ConfigException, load_ssb_secret
 
 CONFIG_FILE = """
 ## Comments should be supported too

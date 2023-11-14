@@ -23,11 +23,10 @@
 from base64 import b64decode
 from collections import OrderedDict
 
-import pytest
 from nacl.signing import SigningKey, VerifyKey
+import pytest
 
-from ssb.feed import LocalMessage, LocalFeed, Feed, Message, NoPrivateKeyException
-
+from ssb.feed import Feed, LocalFeed, LocalMessage, Message, NoPrivateKeyException
 
 SERIALIZED_M1 = b"""{
   "previous": null,

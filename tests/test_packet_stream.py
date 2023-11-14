@@ -20,13 +20,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from asyncio import Event, ensure_future, gather
 import json
-from asyncio import ensure_future, gather, Event
 
-import pytest
 from nacl.signing import SigningKey
-
+import pytest
 from secret_handshake.network import SHSDuplexStream
+
 from ssb.packet_stream import PacketStream, PSMessageType
 
 
