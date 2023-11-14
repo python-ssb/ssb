@@ -24,11 +24,14 @@
 
 from base64 import b64decode
 from collections import OrderedDict
+from datetime import datetime, timezone
 
 from nacl.signing import SigningKey, VerifyKey
 import pytest
+from pytest_mock import MockerFixture
 
 from ssb.feed import Feed, LocalFeed, LocalMessage, Message, NoPrivateKeyException
+from ssb.feed.models import get_millis_1970
 
 SERIALIZED_M1 = b"""{
   "previous": null,
@@ -240,3 +243,39 @@ def test_parse(local_feed):  # pylint: disable=redefined-outer-name
         "description": "The Chosen One",
     }
     assert m1.timestamp == 1495706260190
+
+
+def test_local_unsigned(local_feed: LocalFeed, mocker: MockerFixture) -> None:  # pylint: disable=redefined-outer-name
+    """Test creating an unsigned message on a local feed"""
+
+    mocked_dt = mocker.Mock(spec=datetime)
+    mocked_dt.utcnow = mocker.MagicMock(return_value=datetime(2023, 3, 7, 11, 45, 54, 0, tzinfo=timezone.utc))
+    mocker.patch("ssb.feed.models.datetime", mocked_dt)
+
+    msg = LocalMessage(local_feed, b"test")
+
+    assert msg.feed == local_feed
+    assert msg.content == b"test"
+    assert msg.sequence == 1
+    assert msg.previous is None
+    assert msg.timestamp == 1678189554000
+    assert msg.signature == (
+        "SxZsBINzsuQqmB6JLmXyr22+FRY33bp3wj1MwjAOU3MqifGqfc3W/2T5D4qel5mqrgJt9IT8c3QayB1suj82AQ==.sig.ed25519"
+    )
+
+
+@pytest.mark.parametrize(
+    "timestamp,expected",
+    (
+        (datetime(2023, 3, 7, 11, 45, 54, 0, tzinfo=timezone.utc), 1678189554000),
+        (datetime(2013, 5, 2, 2, 3, 4, 567890, tzinfo=timezone.utc), 1367460184567),
+    ),
+)
+def test_millis(timestamp: datetime, expected: int, mocker: MockerFixture) -> None:
+    """Test the get_millis_1970() function"""
+
+    mocked_dt = mocker.Mock(spec=datetime)
+    mocked_dt.utcnow = mocker.MagicMock(return_value=timestamp)
+    mocker.patch("ssb.feed.models.datetime", mocked_dt)
+
+    assert get_millis_1970() == expected

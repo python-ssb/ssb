@@ -24,7 +24,7 @@
 
 from base64 import b64encode
 from collections import OrderedDict, namedtuple
-import datetime
+from datetime import datetime
 from hashlib import sha256
 
 from simplejson import dumps, loads
@@ -49,7 +49,7 @@ def to_ordered(data):
 def get_millis_1970():
     """Get the UNIX timestamp in milliseconds"""
 
-    return int(datetime.datetime.utcnow().timestamp() * 1000)
+    return int(datetime.utcnow().timestamp() * 1000)
 
 
 class Feed:
