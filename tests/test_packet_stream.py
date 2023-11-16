@@ -37,7 +37,7 @@ from ssb.packet_stream import PacketStream, PSMessage, PSMessageType
 async def _collect_messages(generator: AsyncIterator[Optional[PSMessage]]) -> List[Optional["PSMessage"]]:
     results = []
 
-    async for msg in generator:
+    async for msg in generator:  # pragma: no branch
         results.append(msg)
 
     return results
@@ -106,11 +106,6 @@ class MockSHSSocket(SHSDuplexStream):
 
             yield self.output.pop(0)
 
-    def disconnect(self) -> None:
-        """Disconnect from the remote party"""
-
-        self.is_connected = False
-
 
 class MockSHSClient(MockSHSSocket):
     """A mocked SHS client"""
@@ -119,9 +114,6 @@ class MockSHSClient(MockSHSSocket):
         """Connect to a SHS server"""
 
         self.is_connected = True
-
-        for cb in self._on_connect:
-            await cb()
 
 
 class MockSHSServer(MockSHSSocket):
