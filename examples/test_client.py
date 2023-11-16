@@ -73,7 +73,10 @@ async def test_client():
         print("> RESPONSE:", msg)
 
     try:
-        print("> RESPONSE:", await api.call("whoami", [], "sync"))
+        response_handler = api.call("whoami", [], "sync")
+        response = await response_handler.get_response()
+
+        print("> RESPONSE:", response)
     except MuxRPCAPIException as e:
         print(e)
 

@@ -92,9 +92,12 @@ class PSRequestHandler:
         if not self.event.is_set():
             self.event.set()
 
-    def __await__(self):
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
         # wait until 'process' is called
-        yield from self.event.wait().__await__()  # pylint: disable=no-member
+        await self.event.wait()
 
         return self._msg
 
@@ -178,14 +181,9 @@ class PacketStream:
                 raise StopAsyncIteration()
 
             if msg.req >= 0:
+                logger.info("RECV: %r", msg)
+
                 return msg
-
-    async def __await__(self):
-        async for data in self:
-            logger.info("RECV: %r", data)
-
-            if data is None:
-                return
 
     async def _read(self):
         try:

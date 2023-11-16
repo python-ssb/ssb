@@ -47,9 +47,13 @@ class MuxRPCRequestHandler(MuxRPCHandler):
     def __init__(self, ps_handler):
         self.ps_handler = ps_handler
 
-    def __await__(self):
-        msg = yield from self.ps_handler.__await__()
+    async def get_response(self):
+        """Get the response data"""
+
+        msg = await self.ps_handler
+
         self.check_message(msg)
+
         return msg
 
 
