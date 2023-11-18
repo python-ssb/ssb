@@ -184,7 +184,7 @@ class MuxRPCMessage:
 
         return cls(message.body)
 
-    def __init__(self, body: Union[bytes, str, Dict[str, Any]]):
+    def __init__(self, body: Union[bytes, str, Dict[str, Any], bool]):
         self.body = body
 
     def __repr__(self) -> str:

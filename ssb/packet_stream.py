@@ -131,6 +131,9 @@ class PSMessage:
     def data(self) -> bytes:
         """The raw message data"""
 
+        if self.body is True:
+            return b"true"
+
         if self.type == PSMessageType.TEXT:
             assert isinstance(self.body, str)
 
@@ -147,7 +150,7 @@ class PSMessage:
     def __init__(
         self,
         type_: PSMessageType,
-        body: Union[bytes, str, Dict[str, Any]],
+        body: Union[bytes, str, Dict[str, Any], bool],
         stream: bool,
         end_err: bool,
         req: Optional[int] = None,
@@ -159,7 +162,10 @@ class PSMessage:
         self.req = req
 
     def __repr__(self) -> str:
-        if self.type == PSMessageType.BUFFER:
+        if self.body is True:
+            body = "EOF"
+        elif self.type == PSMessageType.BUFFER:
+            assert isinstance(self.body, bytes)
             body = f"{len(self.body)} bytes"
         else:
             body = str(self.body)
