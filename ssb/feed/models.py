@@ -58,7 +58,7 @@ def get_millis_1970() -> int:
 class Feed:
     """Base class for feeds"""
 
-    def __init__(self, public_key: VerifyKey) -> None:
+    def __init__(self, public_key: VerifyKey):
         self.public_key = public_key
 
     @property
@@ -76,7 +76,7 @@ class Feed:
 class LocalFeed(Feed):
     """Class representing a local feed"""
 
-    def __init__(self, private_key: SigningKey) -> None:  # pylint: disable=super-init-not-called
+    def __init__(self, private_key: SigningKey):  # pylint: disable=super-init-not-called
         self.private_key = private_key
 
     @property
