@@ -95,6 +95,7 @@ async def test_client() -> None:
 
         if msg.type.name == "BUFFER":
             img_data += msg.data
+
         if msg.type.name == "JSON" and msg.data == b"true":
             assert (
                 base64.b64encode(hashlib.sha256(img_data).digest()) == b"kqZ52sDcJSHOx7m4Ww80kK1KIZ65gpGnqwZlfaIVWWM="

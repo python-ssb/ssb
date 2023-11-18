@@ -109,7 +109,6 @@ class Message:
     ):
         self.feed = feed
         self.content = content
-
         self.signature = signature
         self.previous = previous
         self.timestamp = get_millis_1970() if timestamp is None else timestamp
@@ -199,4 +198,5 @@ class LocalMessage(Message):
     def _sign(self) -> str:
         # ensure ordering of keys and indentation of 2 characters, like ssb-keys
         data = self.serialize(add_signature=False)
+
         return (b64encode(bytes(self.feed.sign(data))) + b".sig.ed25519").decode("ascii")

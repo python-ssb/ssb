@@ -134,6 +134,7 @@ class PSMessage:
 
         if self.type == PSMessageType.TEXT:
             assert isinstance(self.body, str)
+
             return self.body.encode("utf-8")
 
         if self.type == PSMessageType.JSON:

@@ -43,6 +43,7 @@ async def on_connect(conn: SHSDuplexStream) -> None:
     api.add_connection(packet_stream)
 
     print("connect", conn)
+
     async for msg in packet_stream:
         print(msg)
 

@@ -303,6 +303,7 @@ async def test_message_stream(
     handler = list(ps._event_map.values())[1][1]  # pylint: disable=protected-access
 
     mock_process = mocker.patch.object(handler, "process", wraps=handler.process)
+
     ps_client.feed(
         [
             b"\n\x00\x00\x02\xc5\xff\xff\xff\xfe",
@@ -348,6 +349,7 @@ async def test_message_request(
     assert ps.register_handler.call_count == 1  # type: ignore[attr-defined]  # pylint: disable=no-member
     handler = list(ps._event_map.values())[0][1]  # pylint: disable=protected-access
     mock_process = mocker.patch.object(handler, "process")
+
     ps_server.feed(
         [
             b"\x02\x00\x00\x00>\xff\xff\xff\xff",
