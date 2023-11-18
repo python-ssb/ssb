@@ -34,6 +34,7 @@ from secret_handshake.network import SHSDuplexStream
 import simplejson
 from typing_extensions import Self
 
+PSHandler = Union["PSRequestHandler", "PSStreamHandler"]
 PSMessageData = Union[bytes, bool, Dict[str, Any], str]
 logger = logging.getLogger("packet_stream")
 
@@ -183,10 +184,10 @@ class PacketStream:
     def __init__(self, connection: SHSDuplexStream):
         self.connection = connection
         self.req_counter = 1
-        self._event_map: Dict[int, Tuple[float, Union[PSRequestHandler, PSStreamHandler]]] = {}
+        self._event_map: Dict[int, Tuple[float, PSHandler]] = {}
         self._connected = False
 
-    def register_handler(self, handler: Union[PSRequestHandler, PSStreamHandler]) -> None:
+    def register_handler(self, handler: PSHandler) -> None:
         """Register an RPC handler"""
 
         self._event_map[handler.req] = (time(), handler)
@@ -284,7 +285,7 @@ class PacketStream:
         stream: bool = False,
         end_err: bool = False,
         req: Optional[int] = None,
-    ) -> Union[PSRequestHandler, PSStreamHandler]:
+    ) -> PSHandler:
         """Send data through the packet stream"""
 
         update_counter = False
@@ -299,7 +300,7 @@ class PacketStream:
         self._write(msg)
 
         if stream:
-            handler: Union[PSRequestHandler, PSStreamHandler] = PSStreamHandler(self.req_counter)
+            handler: PSHandler = PSStreamHandler(self.req_counter)
         else:
             handler = PSRequestHandler(self.req_counter)
 
