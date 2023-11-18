@@ -239,7 +239,7 @@ async def test_message_encoding(ps_client: MockSHSClient) -> None:  # pylint: di
 @pytest.mark.asyncio
 async def test_message_stream(
     ps_client: MockSHSClient, mocker: MockerFixture  # pylint: disable=redefined-outer-name
-) -> None:  # pylint: disable=redefined-outer-name
+) -> None:
     """Test requesting a history stream"""
 
     await ps_client.connect()
@@ -330,7 +330,7 @@ async def test_message_stream(
 @pytest.mark.asyncio
 async def test_message_request(
     ps_server: MockSHSServer, mocker: MockerFixture  # pylint: disable=redefined-outer-name
-) -> None:  # pylint: disable=redefined-outer-name
+) -> None:
     """Test message sending"""
 
     ps_server.listen()

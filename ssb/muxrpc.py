@@ -38,7 +38,7 @@ class MuxRPCAPIException(Exception):
     """Exception to raise on MuxRPC API errors"""
 
 
-class MuxRPCHandler:  # pylint: disable=too-few-public-methods
+class MuxRPCHandler:
     """Base MuxRPC handler class"""
 
     def check_message(self, msg: PSMessage) -> None:

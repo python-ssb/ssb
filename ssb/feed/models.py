@@ -180,7 +180,7 @@ class Message:
 class LocalMessage(Message):
     """Class representing a local message"""
 
-    def __init__(  # pylint: disable=too-many-arguments,super-init-not-called
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         feed: LocalFeed,
         content: Dict[str, Any],
